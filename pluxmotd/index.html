@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PluxMotd Wiki</title>
+<style>
+:root{
+  --bg:#ffffff; --bg-alt:#f6f8fa; --sidebar-bg:#f6f8fa;
+  --border:#d8dee4; --text:#1f2328; --muted:#656d76;
+  --accent:#0891b2; --accent-soft:rgba(8,145,178,.1);
+  --code-bg:#f6f8fa; --code-text:#cf222e; --table-head:#f6f8fa;
+  --shadow:0 1px 3px rgba(27,31,36,.08);
+  --warn-bg:#fff8c5; --warn-border:#d4a72c; --warn-text:#4d2d00;
+  --info-bg:#ddf4ff; --info-border:#54aeff; --info-text:#0a3069;
+}
+[data-theme="dark"]{
+  --bg:#0d1117; --bg-alt:#161b22; --sidebar-bg:#010409;
+  --border:#30363d; --text:#e6edf3; --muted:#8b949e;
+  --accent:#22d3ee; --accent-soft:rgba(34,211,238,.15);
+  --code-bg:#161b22; --code-text:#ff7b72; --table-head:#161b22;
+  --shadow:0 1px 3px rgba(0,0,0,.5);
+  --warn-bg:#3a2d00; --warn-border:#9e6a03; --warn-text:#e3b341;
+  --info-bg:#0c2d6b; --info-border:#1f6feb; --info-text:#a5d6ff;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--text);line-height:1.75;
+  font-size:15px;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- 顶栏 ---------- */
+.topbar{
+  position:fixed;top:0;left:0;right:0;height:56px;z-index:100;
+  display:flex;align-items:center;gap:14px;padding:0 16px;
+  background:var(--bg);border-bottom:1px solid var(--border);
+}
+.menu-toggle{
+  display:none;background:none;border:1px solid var(--border);color:var(--text);
+  border-radius:6px;width:34px;height:34px;font-size:16px;cursor:pointer;line-height:1;
+}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text);font-weight:600}
+.brand-logo{
+  width:30px;height:30px;border-radius:8px;flex-shrink:0;
+  background:linear-gradient(135deg,#0891b2,#3b82f6);
+  color:#fff;font-size:12px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;letter-spacing:.5px;
+}
+.brand-text{font-size:15px;white-space:nowrap}
+.brand-text em{font-style:normal;color:var(--muted);font-weight:400;font-size:13px}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.search-wrap{position:relative}
+#searchInput{
+  width:220px;height:34px;padding:0 12px;border-radius:8px;
+  border:1px solid var(--border);background:var(--bg-alt);color:var(--text);
+  font-size:13px;outline:none;font-family:inherit;transition:.15s;
+}
+#searchInput:focus{border-color:var(--accent);background:var(--bg);width:260px}
+.search-results{
+  position:absolute;top:42px;right:0;width:340px;max-height:380px;overflow-y:auto;
+  background:var(--bg);border:1px solid var(--border);border-radius:10px;
+  box-shadow:0 8px 24px rgba(0,0,0,.15);display:none;padding:6px;
+}
+.search-results.show{display:block}
+.sr-item{
+  display:block;padding:8px 10px;border-radius:6px;text-decoration:none;color:var(--text);
+  font-size:13px;cursor:pointer;
+}
+.sr-item:hover{background:var(--accent-soft)}
+.sr-item b{color:var(--accent);font-weight:600}
+.sr-item small{display:block;color:var(--muted);font-size:12px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px}
+.sr-empty{padding:12px;color:var(--muted);font-size:13px;text-align:center}
+.theme-toggle{
+  width:34px;height:34px;border-radius:8px;border:1px solid var(--border);
+  background:var(--bg-alt);color:var(--text);cursor:pointer;font-size:15px;line-height:1;
+}
+.theme-toggle:hover{border-color:var(--accent)}
+
+/* ---------- 布局 ---------- */
+.layout{display:flex;padding-top:56px}
+.sidebar{
+  position:fixed;top:56px;bottom:0;left:0;width:262px;overflow-y:auto;
+  background:var(--sidebar-bg);border-right:1px solid var(--border);
+  padding:18px 0 48px;z-index:90;
+}
+.sidebar::-webkit-scrollbar{width:8px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.nav-group{margin-bottom:6px}
+.nav-title{
+  padding:10px 20px 6px;font-size:11px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted);
+}
+.nav-link{
+  display:block;padding:7px 20px 7px 22px;margin:1px 8px;border-radius:7px;
+  color:var(--text);text-decoration:none;font-size:14px;
+  border-left:2px solid transparent;transition:.12s;
+}
+.nav-link:hover{background:var(--accent-soft);color:var(--accent)}
+.nav-link.active{
+  background:var(--accent-soft);color:var(--accent);font-weight:600;
+  border-left-color:var(--accent);
+}
+.content{margin-left:262px;flex:1;min-width:0;padding:34px 44px 100px}
+.page{display:none;max-width:920px;margin:0 auto;animation:fade .22s ease}
+.page.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.backdrop{
+  display:none;position:fixed;inset:56px 0 0 0;background:rgba(0,0,0,.4);z-index:85;
+}
+.backdrop.show{display:block}
+
+/* ---------- 排版 ---------- */
+.page h1{
+  font-size:29px;margin:0 0 6px;font-weight:700;letter-spacing:-.01em;
+  padding-bottom:14px;border-bottom:1px solid var(--border);
+}
+.page h2{
+  font-size:21px;margin:38px 0 14px;font-weight:600;
+  padding-bottom:8px;border-bottom:1px solid var(--border);
+}
+.page h3{font-size:17px;margin:26px 0 10px;font-weight:600}
+.page h4{font-size:15px;margin:20px 0 8px;font-weight:600;color:var(--muted)}
+.page p{margin:0 0 14px}
+.lede{color:var(--muted);font-size:15px;margin-bottom:20px}
+.page ul,.page ol{margin:0 0 14px;padding-left:24px}
+.page li{margin:4px 0}
+.page a{color:var(--accent);text-decoration:none}
+.page a:hover{text-decoration:underline}
+.page hr{border:none;border-top:1px solid var(--border);margin:34px 0}
+
+code{
+  font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  font-size:.87em;background:var(--code-bg);color:var(--code-text);
+  padding:.18em .4em;border-radius:5px;border:1px solid var(--border);
+}
+pre{
+  position:relative;background:var(--code-bg);border:1px solid var(--border);
+  border-radius:10px;padding:16px 18px;overflow-x:auto;margin:0 0 18px;
+  line-height:1.6;
+}
+pre code{
+  background:none;border:none;padding:0;color:var(--text);font-size:13px;white-space:pre;
+}
+.copy-btn{
+  position:absolute;top:8px;right:8px;padding:3px 10px;font-size:11px;
+  border:1px solid var(--border);border-radius:6px;background:var(--bg);
+  color:var(--muted);cursor:pointer;opacity:0;transition:.15s;font-family:inherit;
+}
+pre:hover .copy-btn{opacity:1}
+.copy-btn:hover{color:var(--accent);border-color:var(--accent)}
+
+table{
+  width:100%;border-collapse:collapse;margin:0 0 20px;font-size:13.5px;
+  display:block;overflow-x:auto;white-space:nowrap;
+}
+table thead th{
+  background:var(--table-head);font-weight:600;text-align:left;
+  padding:9px 14px;border:1px solid var(--border);white-space:nowrap;
+}
+table td{padding:9px 14px;border:1px solid var(--border);vertical-align:top}
+table tbody tr:nth-child(even){background:var(--bg-alt)}
+table code{white-space:nowrap}
+
+blockquote,.callout{
+  margin:0 0 18px;padding:12px 18px;border-radius:8px;
+  border-left:4px solid var(--info-border);background:var(--info-bg);color:var(--info-text);
+}
+blockquote p:last-child,.callout p:last-child{margin-bottom:0}
+.callout-warn{background:var(--warn-bg);border-left-color:var(--warn-border);color:var(--warn-text)}
+.callout-info{background:var(--info-bg);border-left-color:var(--info-border);color:var(--info-text)}
+.callout strong{font-weight:700}
+
+.badge{
+  display:inline-block;padding:1px 9px;border-radius:20px;font-size:12px;
+  font-weight:600;background:var(--accent-soft);color:var(--accent);
+  border:1px solid transparent;vertical-align:middle;
+}
+.badge-new{background:rgba(26,127,55,.12);color:#1a7f37}
+[data-theme="dark"] .badge-new{background:rgba(63,185,80,.15);color:#3fb950}
+
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin:0 0 22px}
+.card{
+  display:block;padding:16px;border:1px solid var(--border);border-radius:10px;
+  text-decoration:none;color:var(--text);background:var(--bg);
+  transition:.15s;box-shadow:var(--shadow);
+}
+.card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.card b{display:block;color:var(--accent);margin-bottom:5px;font-size:14.5px}
+.card span{font-size:13px;color:var(--muted);line-height:1.55}
+
+/* MOTD 预览块 */
+.motd-demo{
+  background:#0b0e14;border:1px solid var(--border);border-radius:10px;
+  padding:16px 20px;margin:0 0 18px;font-family:ui-monospace,monospace;
+  font-size:14px;line-height:1.9;color:#e6edf3;
+}
+.motd-demo .line{display:block}
+.motd-demo .dim{color:#656d76;font-size:12px;font-family:inherit;display:block;margin-bottom:8px}
+
+.footer-nav{
+  margin-top:46px;padding-top:18px;border-top:1px solid var(--border);
+  font-size:13px;color:var(--muted);
+}
+.footer-nav a{color:var(--accent);text-decoration:none;margin-right:14px}
+
+/* ---------- 响应式 ---------- */
+@media(max-width:980px){
+  .menu-toggle{display:block}
+  .sidebar{transform:translateX(-100%);transition:transform .25s ease}
+  .sidebar.open{transform:translateX(0);box-shadow:6px 0 24px rgba(0,0,0,.18)}
+  .content{margin-left:0;padding:24px 18px 90px}
+  .brand-text{display:none}
+  #searchInput{width:130px}
+  #searchInput:focus{width:170px}
+  .search-results{width:min(340px,calc(100vw - 32px))}
+}
+@media(max-width:520px){
+  .page h1{font-size:23px}
+  .page h2{font-size:18px}
+  .content{padding:20px 14px 90px}
+  table{font-size:13px}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ 顶栏 ============ -->
+<header class="topbar">
+  <button class="menu-toggle" id="menuToggle" aria-label="菜单">☰</button>
+  <a class="brand" href="#home">
+    <span class="brand-logo">PM</span>
+    <span class="brand-text">PluxMotd <em>Wiki</em></span>
+  </a>
+  <div class="topbar-right">
+    <div class="search-wrap">
+      <input type="search" id="searchInput" placeholder="搜索…" autocomplete="off">
+      <div class="search-results" id="searchResults"></div>
+    </div>
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">🌙</button>
+  </div>
+</header>
+
+<div class="layout">
+  <!-- ============ 侧边栏 ============ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="nav-group">
+      <div class="nav-title">概览</div>
+      <a class="nav-link" href="#home" data-route="home">Wiki 总览</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-title">参考文档</div>
+      <a class="nav-link" href="#features" data-route="features">功能介绍</a>
+      <a class="nav-link" href="#commands" data-route="commands">命令与权限</a>
+      <a class="nav-link" href="#config" data-route="config">配置文件详解</a>
+      <a class="nav-link" href="#compat" data-route="compat">版本兼容与自动降级</a>
+      <a class="nav-link" href="#faq" data-route="faq">常见问题 FAQ</a>
+    </div>
+  </aside>
+
+  <!-- ============ 内容区 ============ -->
+  <main class="content" id="content">
+
+  <!-- ======== 页面：Wiki 总览 ======== -->
+  <section class="page" data-route="home">
+    <h1>PluxMotd Wiki — 总览</h1>
+    <p class="lede">全版本通用的服务器列表美化插件 · 当前版本 <span class="badge">v1.0.0</span></p>
+
+    <p>PluxMotd 是一款<strong>全版本通用</strong>的服务器列表美化插件：单个 JAR 同时支持 Minecraft Java <strong>1.8 - 26.x</strong> 的 Spigot / Paper / Purpur 服务端，安装后无需按版本选择任何文件。</p>
+
+    <div class="callout callout-info">
+      <p>插件启动时会自动检测服务端版本并选择对应的内部适配器（Legacy / Modern / Latest），控制台输出醒目的中文横幅，包含检测到的版本、所选适配器与能力开关。</p>
+    </div>
+
+    <h2>功能一览</h2>
+    <table>
+      <thead><tr><th>功能模块</th><th>一句话说明</th></tr></thead>
+      <tbody>
+        <tr><td>双行 MOTD</td><td>两行分开配置、每行独立对齐，支持 RGB / 渐变 / 彩虹</td></tr>
+        <tr><td>服务器图标</td><td>正常 / 维护两套 64×64 PNG，缺失自动回退</td></tr>
+        <tr><td>维护模式</td><td>一键开关、重启保留、白名单放行、进入拦截与提示全可定制</td></tr>
+        <tr><td>假人数</td><td>固定 / 随机 / 真实偏移 / 百分比四种模式，维护期可独立配置</td></tr>
+        <tr><td>全中文</td><td>配置注释、消息文案、控制台输出、启动横幅全部中文</td></tr>
+      </tbody>
+    </table>
+
+    <h2>启动横幅示例</h2>
+<pre><code>==============================================================
+   PluxMotd v1.0.0  —— 全版本 MOTD / 服务器图标 / 假人数 / 维护模式
+   支持范围: Minecraft Java 1.8 - 26.x  (Spigot / Paper / Purpur)
+   当前环境: Minecraft 1.20.4   适配器: ModernAdapter
+   能力检测: RGB 支持 | 渐变 支持 | 组件 MOTD 不使用
+   启用耗时 12 ms
+   命令: /pluxmotd (别名 /pmotd)   输入 /pluxmotd help 查看帮助
+==============================================================</code></pre>
+
+    <h2>Wiki 目录</h2>
+    <table>
+      <thead><tr><th>页面</th><th>内容</th></tr></thead>
+      <tbody>
+        <tr><td><a href="#features">功能介绍</a></td><td>双行 MOTD、文本格式系统、排版对齐、服务器图标、维护模式、假人数系统</td></tr>
+        <tr><td><a href="#commands">命令与权限</a></td><td><code>/pluxmotd</code> 全部子命令、权限节点与默认值</td></tr>
+        <tr><td><a href="#config">配置文件详解</a></td><td><code>config.yml</code>、<code>messages.yml</code>、<code>data.yml</code> 结构与关键项</td></tr>
+        <tr><td><a href="#compat">版本兼容与自动降级</a></td><td>单 JAR 全版本原理、三种适配器、降级规则细节</td></tr>
+        <tr><td><a href="#faq">常见问题 FAQ</a></td><td>重载、对齐、图标、维护模式、假人数、编码等常见疑问</td></tr>
+      </tbody>
+    </table>
+
+    <h2>快速上手</h2>
+    <ol>
+      <li>将 <code>PluxMotd.jar</code> 放入服务端的 <code>plugins</code> 文件夹并重启服务端。</li>
+      <li>编辑 <code>plugins/PluxMotd/config.yml</code>，填写 <code>motd.normal.line1</code> / <code>line2</code> 等文案（支持 RGB / 渐变 / 彩虹）。</li>
+      <li>执行 <code>/pluxmotd reload</code> 使配置生效；用 <code>/pluxmotd motd preview</code> 在聊天栏预览效果。</li>
+      <li>需要临时关闭服务器时执行 <code>/pluxmotd maintenance on</code>，恢复时 <code>off</code>。</li>
+    </ol>
+
+    <hr>
+    <p class="lede">文档版本：对应 PluxMotd v1.0.0。</p>
+
+    <div class="footer-nav">
+      <a href="#features">功能介绍</a><a href="#commands">命令与权限</a><a href="#config">配置文件详解</a><a href="#compat">版本兼容</a><a href="#faq">常见问题</a>
+    </div>
+  </section>
+
+  <!-- ======== 页面：功能介绍 ======== -->
+  <section class="page" data-route="features">
+    <h1>功能介绍</h1>
+    <p class="lede">本文档面向希望完整了解 PluxMotd 能力的用户与服务端管理员。配置项细节见 <a href="#config">配置文件详解</a>。</p>
+
+    <h2>1. 核心功能：双行 MOTD</h2>
+    <p>Minecraft 服务器列表的 MOTD 固定为<strong>两行</strong>。PluxMotd 采用分行配置，直观且不需要转义换行符：</p>
+<pre><code>motd:
+  normal:                     # 正常状态显示
+    line1: "&lt;gradient:#FF6A00:#FFD200&gt;&lt;bold&gt;PluxMotd 服务器&lt;/bold&gt;&lt;/gradient&gt;"
+    line2: "&lt;color:#00AAFF&gt;欢迎来到这里，一起玩吧！&lt;/color&gt;"
+    line1-align: CENTER       # 第一行居中
+    line2-align: CENTER       # 第二行居中
+
+  maintenance:                # 维护模式开启时显示
+    line1: "&lt;color:#FFAA00&gt;&lt;bold&gt;服务器维护中&lt;/bold&gt;&lt;/color&gt;"
+    line2: "&lt;gray&gt;我们正在努力，请稍候再来……&lt;/gray&gt;"</code></pre>
+    <p>要点：</p>
+    <ul>
+      <li><code>line1</code> / <code>line2</code> 各占一行，<strong>不需要再写 <code>\n</code></strong>；<code>line2</code> 留空则只显示一行。</li>
+      <li>每行可独立配置对齐方式（见<a href="#4-排版与对齐系统">第 4 节</a>）。</li>
+      <li>正常 / 维护 / 旧客户端三套文案互相独立，随时切换维护模式即可整套替换。</li>
+      <li><strong>向下兼容旧写法</strong>：如果配置仍是“一个字符串 + <code>\n</code>”或字符串列表，插件会自动识别并拆回两行，老配置文件可直接沿用升级。</li>
+    </ul>
+    <p><code>/pluxmotd motd preview</code> 可以在聊天栏同时预览“正常状态”与“维护状态”两套双行 MOTD 的实际效果。</p>
+
+    <h2>2. 文本格式系统</h2>
+    <p>所有文本字段（MOTD、踢出提示、消息文件）使用同一套格式语言，可自由混用三种写法。</p>
+
+    <h3>2.1 MiniMessage 风格标签</h3>
+    <table>
+      <thead><tr><th>标签</th><th>作用</th><th>示例</th></tr></thead>
+      <tbody>
+        <tr><td><code>&lt;color:#RRGGBB&gt;</code></td><td>指定 RGB 颜色</td><td><code>&lt;color:#00AAFF&gt;蓝色文字&lt;/color&gt;</code></td></tr>
+        <tr><td><code>#RRGGBB</code>（作为标签名）</td><td>同上，简写</td><td><code>&lt;#FF5555&gt;红色&lt;/#FF5555&gt;</code></td></tr>
+        <tr><td><code>&lt;颜色名&gt;</code></td><td>16 种命名颜色</td><td><code>&lt;red&gt;</code> <code>&lt;gold&gt;</code> <code>&lt;gray&gt;</code> <code>&lt;aqua&gt;</code> 等，也支持 <code>orange</code>、<code>light_purple</code> 等别名</td></tr>
+        <tr><td><code>&lt;gradient:#A:#B&gt;</code> / <code>&lt;gradient:#A:#B:#C&gt;</code></td><td>在多个颜色站点之间平滑渐变</td><td><code>&lt;gradient:#FF0000:#00FF00&gt;渐变标题&lt;/gradient&gt;</code></td></tr>
+        <tr><td><code>&lt;rainbow&gt;</code></td><td>整段文字覆盖全彩虹色环</td><td><code>&lt;rainbow&gt;彩虹&lt;/rainbow&gt;</code></td></tr>
+        <tr><td><code>&lt;bold&gt;</code> <code>&lt;italic&gt;</code> <code>&lt;underlined&gt;</code> <code>&lt;strikethrough&gt;</code> <code>&lt;obfuscated&gt;</code></td><td>粗体 / 斜体 / 下划线 / 删除线 / 滚动乱码</td><td><code>&lt;bold&gt;&lt;italic&gt;粗斜体&lt;/italic&gt;&lt;/bold&gt;</code></td></tr>
+        <tr><td><code>&lt;reset&gt;</code></td><td>清除当前所有格式</td><td>—</td></tr>
+        <tr><td><code>&lt;space:N&gt;</code></td><td>插入 N 个空格（排版用，见第 4 节）</td><td><code>&lt;space:6&gt;</code></td></tr>
+        <tr><td><code>&lt;br&gt;</code></td><td>在文本中强制换行</td><td>—</td></tr>
+      </tbody>
+    </table>
+    <p>标签支持嵌套，渐变 / 彩虹会按<strong>实际渲染字符</strong>逐字符计算颜色。</p>
+
+    <h3>2.2 传统颜色码</h3>
+    <ul>
+      <li><code>&amp;</code> 或 <code>§</code> 开头的原版代码全部可用：<code>&amp;a</code>-<code>&amp;f</code> 颜色、<code>&amp;k</code> 乱码、<code>&amp;l</code> 粗体、<code>&amp;m</code> 删除线、<code>&amp;n</code> 下划线、<code>&amp;o</code> 斜体、<code>&amp;r</code> 重置。</li>
+      <li>内联十六进制：<code>&amp;#RRGGBB</code>（例：<code>&amp;#FF6A00</code>），以及完整的 <code>§x§R§R§G§G§B§B</code> 形式。</li>
+    </ul>
+
+    <h3>2.3 混用规则</h3>
+    <p>以上写法可以在同一条字符串里任意混排，例如：</p>
+<pre><code>line1: "&amp;6&amp;#FF6A00&lt;gradient:#FF6A00:#FFD200&gt;Plux&lt;/gradient&gt; &lt;bold&gt;服务器&lt;/bold&gt;"</code></pre>
+
+    <h2 id="4-排版与对齐系统">3. 排版与对齐系统</h2>
+
+    <h3>3.1 为什么需要“对齐”</h3>
+    <p>原版服务器列表对 MOTD 两行<strong>一律从最左侧开始绘制</strong>。PluxMotd 通过精确计算每行文字的近似像素宽度，在行首自动补入空格，实现视觉上的<strong>居中（CENTER）</strong>与<strong>右对齐（RIGHT）</strong>效果。</p>
+
+    <h3>3.2 配置方式</h3>
+<pre><code>motd:
+  normal:
+    line1: "..."
+    line1-align: CENTER     # LEFT / CENTER / RIGHT，也可直接写中文：左 / 居中 / 右
+  format:
+    align-width: 220        # 对齐参考宽度（像素）
+    default-align: CENTER   # 未显式指定 line*-align 时每一行的默认对齐</code></pre>
+    <ul>
+      <li><strong>对齐取值</strong>：<code>LEFT</code> 左对齐（原版行为，不补位）、<code>CENTER</code> 居中、<code>RIGHT</code> 右对齐；同时接受中文写法（“居中”、“左对齐”、“右”等）与常见缩写（<code>MIDDLE</code>、<code>C</code>、<code>R</code>、<code>L</code>）。</li>
+      <li><strong><code>align-width</code>（参考宽度）</strong>：对齐计算所依据的显示区域宽度。服务器列表 MOTD 区域约 220 像素，一般无需修改；若觉得整体偏左 / 偏右，微调该值即可。</li>
+      <li><strong>宽度计算规则</strong>：英文、数字按原版字体逐字符宽度累加，中文等全角字符按 8 像素计算，粗体字符会额外加宽——因此中英文混排、加粗与否都能得到正确的补位。</li>
+    </ul>
+
+    <h3>3.3 手动微调</h3>
+    <p>自动补位为近似值（个别资源包字体可能有 1-2 像素偏差）。需要绝对精确时：</p>
+    <ul>
+      <li>用 <code>&lt;space:N&gt;</code> 在行首 / 行中手动插入空格微调；</li>
+      <li>或为该客户端配置 <code>motd.legacy</code> 传统文案，亲手控制每一个字符。</li>
+    </ul>
+
+    <h2>4. 服务器图标</h2>
+<pre><code>icon:
+  enabled: true
+  normal-path: "icon.png"               # 相对 plugins/PluxMotd/，也可写绝对路径
+  maintenance-path: "maintenance-icon.png"
+  fallback-to-default: true             # 维护图标缺失时回退使用普通图标</code></pre>
+    <ul>
+      <li>图片要求：<strong>PNG 格式，恰好 64×64 像素</strong>，不符合会自动跳过并使用原版图标（不会报错刷屏）。</li>
+      <li>正常与维护两套图标独立加载；更换文件后执行 <code>/pluxmotd icon reload</code> 即可生效，无需重载整个配置。</li>
+      <li>维护模式开启时，列表自动展示维护图标（可通过 <code>maintenance.use-maintenance-icon</code> 关闭该联动）。</li>
+    </ul>
+
+    <h2>5. 维护模式</h2>
+
+    <h3>5.1 开关与持久化</h3>
+    <ul>
+      <li><code>/pluxmotd maintenance on | off | status</code> 随时切换，无需改配置、无需重启。</li>
+      <li>实时状态写入 <code>data.yml</code>，<strong>服务端重启后保持原样</strong>（首次启动的初始值由 <code>maintenance.enabled</code> 决定）。</li>
+      <li>状态落盘在后台异步完成，主线程零阻塞。</li>
+    </ul>
+
+    <h3>5.2 谁能进、谁被拦</h3>
+    <p>被拦截的玩家在<strong>登录阶段</strong>直接看到自定义踢出提示（不占用加载时间）。放行优先级：</p>
+    <ol>
+      <li>拥有 <code>pluxmotd.bypass</code> 权限的玩家（OP 默认拥有）；</li>
+      <li><code>maintenance.whitelist</code> 白名单中的玩家名或 UUID（带不带 <code>-</code> 的 UUID 均可识别）；</li>
+      <li>控制台 / 拥有权限的 OP 永远可进。</li>
+    </ol>
+    <p>封禁、服务器已满等其他拒绝原因<strong>不受影响、不会被覆盖</strong>。</p>
+
+    <h3>5.3 踢出提示支持分行</h3>
+<pre><code>maintenance:
+  kick-message:
+    line1: "&lt;red&gt;&lt;bold&gt;服务器正在维护中！&lt;/bold&gt;&lt;/red&gt;"
+    line2: "&lt;gray&gt;预计很快恢复，请稍后再试。&lt;/gray&gt;"</code></pre>
+    <p>同样兼容旧版“单字符串 + <code>\n</code>”写法，支持全部颜色格式与 RGB。</p>
+
+    <h3>5.4 维护期间的整套联动</h3>
+    <p>维护模式开启时可逐项切换（每一项目前独立开关）：</p>
+    <table>
+      <thead><tr><th>配置项</th><th>作用</th></tr></thead>
+      <tbody>
+        <tr><td><code>use-maintenance-motd</code></td><td>列表 MOTD 切换为维护文案</td></tr>
+        <tr><td><code>use-maintenance-icon</code></td><td>列表图标切换为维护图标</td></tr>
+        <tr><td><code>use-maintenance-fake-players</code></td><td>人数切换为维护专用假人数</td></tr>
+        <tr><td><code>show-maintenance-motd-to-all</code></td><td><code>true</code>：所有人看到维护 MOTD；<code>false</code>：列表照常显示正常 MOTD，仅在进入时拦截（“低调维护”）</td></tr>
+      </tbody>
+    </table>
+
+    <h2>6. 假人数系统</h2>
+<pre><code>fake-players:
+  enabled: true
+  mode: "FIXED"                 # FIXED | RANDOM | REAL_OFFSET | PERCENTAGE
+  random-refresh-seconds: 30    # RANDOM 模式的刷新周期
+  normal:       { ... }         # 正常状态的人数配置
+  maintenance:  { ... }         # 维护状态的人数配置（enabled: true 时独立生效）</code></pre>
+    <table>
+      <thead><tr><th>模式</th><th>行为</th><th>关键参数</th></tr></thead>
+      <tbody>
+        <tr><td><code>FIXED</code> 固定</td><td>永远显示设定值</td><td><code>online</code>、<code>max</code></td></tr>
+        <tr><td><code>RANDOM</code> 随机</td><td>在区间内随机，间隔 <code>random-refresh-seconds</code> 秒重掷；设为 0 则每次列表刷新都随机</td><td><code>random.min-online / max-online / min-max / max-max</code></td></tr>
+        <tr><td><code>REAL_OFFSET</code> 真实偏移</td><td>显示 <code>真实在线 + online-offset</code>、<code>真实上限 + max-offset</code></td><td><code>real-offset.online-offset / max-offset</code></td></tr>
+        <tr><td><code>PERCENTAGE</code> 百分比</td><td>显示 <code>真实在线 × online-percent ÷ 100</code>（150 = 显示 1.5 倍）</td><td><code>percentage.online-percent</code></td></tr>
+      </tbody>
+    </table>
+    <ul>
+      <li>结果自动裁剪在 <code>0 ≤ 在线 ≤ 上限</code> 的合法范围内，绝不会出现“在线人数大于上限”的穿帮。</li>
+      <li>正常 / 维护各有一套独立模式与参数，互不干扰。</li>
+    </ul>
+
+    <h2>7. 性能与安全设计</h2>
+    <ul>
+      <li><strong>列表刷新零开销</strong>：所有 MOTD 文本在配置加载时预先渲染并缓存；每次服务器列表请求只是从内存取字符串，<strong>不读文件、不查数据库、不发网络请求、不解析格式</strong>。</li>
+      <li><strong>主线程不阻塞</strong>：维护状态写盘在异步线程完成；图标只在加载 / 重载时读取一次。</li>
+      <li><strong>异常隔离</strong>：处理列表请求与拦截登录的逻辑全部有保护，任何意外只记录日志，绝不影响服务端运行。</li>
+      <li><strong>无前置依赖</strong>：不需要安装任何其他插件或库，不注入、不修改游戏文件。</li>
+    </ul>
+
+    <h2>8. 已知限制</h2>
+    <ul>
+      <li>对齐为<strong>空格补位模拟</strong>，极端字体资源包下可能有 1-2 像素偏差（可手动微调，见 3.3）。</li>
+      <li>1.8 - 1.15 客户端没有真 RGB，这是游戏本身的能力限制。</li>
+      <li>MOTD 单行长度受原版协议约束（约 59 个字符 / 220 像素），超出会被客户端截断。</li>
+      <li>若未来 Minecraft 大版本造成服务端 API 重大变更，需等待插件更新对应适配层。</li>
+    </ul>
+
+    <div class="footer-nav">
+      <a href="#commands">命令与权限</a><a href="#config">配置文件详解</a><a href="#compat">版本兼容</a><a href="#faq">常见问题</a>
+    </div>
+  </section>
+
+  <!-- ======== 页面：命令与权限 ======== -->
+  <section class="page" data-route="commands">
+    <h1>命令与权限</h1>
+    <p class="lede">主命令 <code>/pluxmotd</code>，别名 <code>/pmotd</code>、<code>/motd</code>，支持 Tab 补全。</p>
+
+    <h2>子命令</h2>
+    <table>
+      <thead><tr><th>命令</th><th>权限</th><th>默认</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td><code>/pluxmotd reload</code></td><td><code>pluxmotd.reload</code></td><td>OP</td><td>重载配置、消息、图标与全部状态</td></tr>
+        <tr><td><code>/pluxmotd status</code></td><td><code>pluxmotd.status</code></td><td>OP</td><td>查看适配器、能力、MOTD / 图标 / 假人数 / 维护状态</td></tr>
+        <tr><td><code>/pluxmotd maintenance on/off/status</code></td><td><code>pluxmotd.maintenance</code></td><td>OP</td><td>维护模式开关与查询</td></tr>
+        <tr><td><code>/pluxmotd icon reload</code></td><td><code>pluxmotd.icon</code></td><td>OP</td><td>仅重新读取图标</td></tr>
+        <tr><td><code>/pluxmotd motd preview</code></td><td><code>pluxmotd.motd</code></td><td>OP</td><td>聊天栏预览两套 MOTD 效果</td></tr>
+        <tr><td><code>/pluxmotd help</code></td><td><code>pluxmotd.use</code></td><td>所有人</td><td>帮助列表</td></tr>
+      </tbody>
+    </table>
+
+    <h2>权限节点</h2>
+    <table>
+      <thead><tr><th>权限节点</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td><code>pluxmotd.admin</code></td><td>总管理权限，自动包含上面所有子权限</td></tr>
+        <tr><td><code>pluxmotd.bypass</code></td><td>维护模式期间允许进入（默认 OP）</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-info">
+      <p>所有提示文案（含无权限提示、帮助描述）都在 <code>messages.yml</code> 中可编辑；消息文本支持功能介绍页第 2 节的全部格式语法，旧客户端自动降级。</p>
+    </div>
+
+    <h2>常用示例</h2>
+    <h3>临时开启维护</h3>
+<pre><code>/pluxmotd maintenance on</code></pre>
+    <h3>查看当前适配器与状态</h3>
+<pre><code>/pluxmotd status</code></pre>
+    <h3>改完 config.yml 后生效</h3>
+<pre><code>/pluxmotd reload</code></pre>
+    <h3>只换了图标文件</h3>
+<pre><code>/pluxmotd icon reload</code></pre>
+
+    <div class="footer-nav">
+      <a href="#features">功能介绍</a><a href="#config">配置文件详解</a><a href="#faq">常见问题</a>
+    </div>
+  </section>
+
+  <!-- ======== 页面：配置文件详解 ======== -->
+  <section class="page" data-route="config">
+    <h1>配置文件详解</h1>
+    <p class="lede">插件首次启动后会在 <code>plugins/PluxMotd/</code> 下生成配置文件。修改后使用 <code>/pluxmotd reload</code> 热重载即可。</p>
+
+    <h2>config.yml 结构总览</h2>
+<pre><code>motd:
+  normal / maintenance     双行 MOTD（line1、line2、line1-align、line2-align）
+  format                   排版设置（align-width、default-align）
+  legacy                   旧客户端（1.8-1.15）专用文案，结构与 normal 相同
+    enabled                开关（默认关闭 = 自动降级）
+  fallback-color           旧客户端 RGB 统一折叠成的颜色；留空 = 逐字符取最近 16 色
+icon:                      图标（enabled、normal-path、maintenance-path、fallback-to-default）
+fake-players:              假人数（enabled、mode、random-refresh-seconds、normal、maintenance）
+maintenance:               维护模式（enabled、whitelist、kick-message、四项联动开关）
+debug:                     输出调试日志（排障用）</code></pre>
+
+    <h2>motd 段落</h2>
+<pre><code>motd:
+  normal:
+    line1: "&lt;gradient:#FF6A00:#FFD200&gt;&lt;bold&gt;PluxMotd 服务器&lt;/bold&gt;&lt;/gradient&gt;"
+    line2: "&lt;color:#00AAFF&gt;欢迎来到这里，一起玩吧！&lt;/color&gt;"
+    line1-align: CENTER
+    line2-align: CENTER
+
+  maintenance:
+    line1: "&lt;color:#FFAA00&gt;&lt;bold&gt;服务器维护中&lt;/bold&gt;&lt;/color&gt;"
+    line2: "&lt;gray&gt;我们正在努力，请稍候再来……&lt;/gray&gt;"
+
+  format:
+    align-width: 220        # 对齐参考宽度（像素）
+    default-align: CENTER   # 未显式指定 line*-align 时的默认对齐
+
+  legacy:
+    enabled: false          # true 时旧客户端使用下面的手写文案
+    line1: "&amp;6PluxMotd 服务器"
+    line2: "&amp;b欢迎来到这里，一起玩吧！"
+
+  fallback-color: ""        # 例："#FFAA00"，留空则逐字符取最近 16 色</code></pre>
+
+    <h2>icon 段落</h2>
+<pre><code>icon:
+  enabled: true
+  normal-path: "icon.png"
+  maintenance-path: "maintenance-icon.png"
+  fallback-to-default: true</code></pre>
+    <ul>
+      <li>路径相对 <code>plugins/PluxMotd/</code>，也可写绝对路径。</li>
+      <li>PNG 必须恰好 <strong>64×64</strong>，否则自动跳过并使用原版图标（不会刷屏报错）。</li>
+    </ul>
+
+    <h2>fake-players 段落</h2>
+<pre><code>fake-players:
+  enabled: true
+  mode: "FIXED"
+  random-refresh-seconds: 30
+  normal:
+    online: 20
+    max: 100
+  maintenance:
+    enabled: true
+    online: 5
+    max: 100</code></pre>
+
+    <h3>各模式的参数结构</h3>
+    <h4>FIXED</h4>
+<pre><code>normal:
+  online: 20
+  max: 100</code></pre>
+    <h4>RANDOM</h4>
+<pre><code>normal:
+  random:
+    min-online: 15
+    max-online: 30
+    min-max: 80
+    max-max: 120</code></pre>
+    <h4>REAL_OFFSET</h4>
+<pre><code>normal:
+  real-offset:
+    online-offset: 5
+    max-offset: 20</code></pre>
+    <h4>PERCENTAGE</h4>
+<pre><code>normal:
+  percentage:
+    online-percent: 150     # 150 = 显示真实在线的 1.5 倍</code></pre>
+
+    <h2>maintenance 段落</h2>
+<pre><code>maintenance:
+  enabled: false            # 首次启动时的初始状态（之后以 data.yml 为准）
+  whitelist:                # 允许进入的玩家名或 UUID
+    - "Notch"
+    - "069a79f4-44e9-4726-a5be-fca90e38aaf5"
+
+  kick-message:
+    line1: "&lt;red&gt;&lt;bold&gt;服务器正在维护中！&lt;/bold&gt;&lt;/red&gt;"
+    line2: "&lt;gray&gt;预计很快恢复，请稍后再试。&lt;/gray&gt;"
+
+  use-maintenance-motd: true
+  use-maintenance-icon: true
+  use-maintenance-fake-players: true
+  show-maintenance-motd-to-all: true</code></pre>
+
+    <h2>messages.yml</h2>
+    <p>每一条管理员 / 玩家提示都是独立键值，前缀 <code>prefix</code> 也可修改。主要键：</p>
+    <table>
+      <thead><tr><th>键</th><th>场景</th></tr></thead>
+      <tbody>
+        <tr><td><code>prefix</code></td><td>所有插件消息的统一前缀</td></tr>
+        <tr><td><code>no-permission</code> / <code>invalid-command</code></td><td>权限不足 / 命令输入错误</td></tr>
+        <tr><td><code>reload-success</code> / <code>reload-failed</code></td><td>重载结果</td></tr>
+        <tr><td><code>maintenance-enabled</code> / <code>maintenance-disabled</code> / <code>maintenance-status</code></td><td>维护模式反馈</td></tr>
+        <tr><td><code>icon-loaded</code> / <code>icon-load-failed</code></td><td>图标加载结果（支持 <code>%file%</code> 占位符）</td></tr>
+        <tr><td><code>status-*</code></td><td><code>/pluxmotd status</code> 的每一行输出</td></tr>
+        <tr><td><code>motd-preview</code> / <code>motd-preview-normal</code> / <code>motd-preview-maintenance</code></td><td>MOTD 预览标题与分隔行</td></tr>
+        <tr><td><code>help-line</code> / <code>help-desc-*</code></td><td>帮助行模板与每条命令的描述</td></tr>
+      </tbody>
+    </table>
+    <p>占位符写法为 <code>%名称%</code>（如 <code>%status%</code>、<code>%adapter%</code>）。</p>
+
+    <h2>data.yml</h2>
+    <p>由插件自动维护，无需手动编辑。用于保存维护模式的实时状态，服务端重启后自动恢复。</p>
+
+    <h2>重载的“防呆”设计</h2>
+    <ul>
+      <li>每次 <code>reload</code> 会整体重新解析配置并<strong>原子替换</strong>：解析失败时<strong>保留上一份正常配置</strong>并在控制台提示，改坏一个字母绝不会让线上 MOTD 消失。</li>
+      <li><code>data.yml</code> 由插件自动维护，无需手动编辑。</li>
+    </ul>
+
+    <div class="footer-nav">
+      <a href="#features">功能介绍</a><a href="#commands">命令与权限</a><a href="#faq">常见问题</a>
+    </div>
+  </section>
+
+  <!-- ======== 页面：版本兼容与自动降级 ======== -->
+  <section class="page" data-route="compat">
+    <h1>版本兼容与自动降级</h1>
+
+    <h2>单 JAR 全版本的原理</h2>
+    <p>插件内部按服务端版本自动选择三种适配器之一（用户在启动横幅中可以看到选择了哪个）：</p>
+    <table>
+      <thead><tr><th>适配器</th><th>覆盖版本</th><th>RGB / 渐变</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td><code>LegacyAdapter</code></td><td>1.8 – 1.15</td><td>自动降级 16 色</td><td>仅使用老 API，绝不崩溃</td></tr>
+        <tr><td><code>ModernAdapter</code></td><td>1.16 – 1.20</td><td>完整支持（<code>§x</code> 十六进制）</td><td>原生真彩</td></tr>
+        <tr><td><code>LatestAdapter</code></td><td>1.21 – 26.x</td><td>完整支持</td><td>Paper 服务端自动尝试组件 MOTD，失败则回退</td></tr>
+      </tbody>
+    </table>
+    <p><strong>玩家客户端</strong>的版本独立判断：新客户端看到完整 RGB，老客户端看到降级版本，同一份配置同时服务所有玩家。</p>
+
+    <h2>支持范围总览</h2>
+    <table>
+      <thead><tr><th>项目</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>服务端核心</td><td>Spigot / Paper / Purpur</td></tr>
+        <tr><td>Minecraft 版本</td><td><strong>1.8 - 26.x</strong>（单个 JAR 通吃，无需按版本选择文件）</td></tr>
+        <tr><td>前置依赖</td><td>无（不需要安装任何其他插件或库）</td></tr>
+      </tbody>
+    </table>
+
+    <h2>降级规则细节</h2>
+    <ul>
+      <li>渐变 / 彩虹在 1.8 - 1.15 上呈现为<strong>逐字符最接近的 16 色阶梯</strong>，层次感保留。</li>
+      <li>设置 <code>motd.fallback-color</code> 后，旧客户端的所有彩色统一折叠为该单一颜色（更整洁）。</li>
+      <li>配置 <code>motd.legacy.*</code> 后，旧客户端直接看到你手写的传统文案（完全可控）。</li>
+    </ul>
+
+    <h2>适配器选择建议</h2>
+    <table>
+      <thead><tr><th>场景</th><th>建议</th></tr></thead>
+      <tbody>
+        <tr><td>混合客户端环境</td><td>直接使用默认配置，插件自动按每个客户端版本渲染，无需任何额外设置</td></tr>
+        <tr><td>追求精致旧版效果</td><td>开启 <code>motd.legacy.enabled</code>，手写一套传统文案，让 1.8 - 1.15 客户端完全可控</td></tr>
+        <tr><td>统一整洁风格</td><td>设置 <code>motd.fallback-color</code> 为服务器主色调，旧客户端的所有彩色折叠为单色</td></tr>
+        <tr><td>真彩体验优先</td><td>不做任何额外配置；现代客户端自动获得完整 RGB / 渐变 / 彩虹</td></tr>
+      </tbody>
+    </table>
+
+    <h2>已知限制</h2>
+    <ul>
+      <li>对齐为<strong>空格补位模拟</strong>，极端字体资源包下可能有 1-2 像素偏差。</li>
+      <li>1.8 - 1.15 客户端没有真 RGB，这是游戏本身的能力限制。</li>
+      <li>MOTD 单行长度受原版协议约束（约 59 个字符 / 220 像素），超出会被客户端截断。</li>
+      <li>若未来 Minecraft 大版本造成服务端 API 重大变更，需等待插件更新对应适配层。</li>
+    </ul>
+
+    <div class="footer-nav">
+      <a href="#features">功能介绍</a><a href="#config">配置文件详解</a><a href="#faq">常见问题</a>
+    </div>
+  </section>
+
+  <!-- ======== 页面：常见问题 FAQ ======== -->
+  <section class="page" data-route="faq">
+    <h1>常见问题 FAQ</h1>
+    <p class="lede">本页收录 PluxMotd 使用与运维中最常见的疑问。更多细节见 <a href="#features">功能介绍</a> 与 <a href="#config">配置文件详解</a>。</p>
+
+    <h2>配置与重载</h2>
+    <p><strong>Q：改了 config.yml 但列表没变化？</strong><br>
+    A：执行 <code>/pluxmotd reload</code>。看到“重载成功”才会生效；若提示失败，控制台会指出出错位置，且线上显示保持原样不受影响。</p>
+
+    <p><strong>Q：reload 会不会把线上显示搞崩？</strong><br>
+    A：不会。每次 reload 都整体重新解析并原子替换——解析失败时保留上一份正常配置并在控制台提示。</p>
+
+    <h2>排版与对齐</h2>
+    <p><strong>Q：居中后感觉有点偏？</strong><br>
+    A：自动补位基于近似像素宽度。整体偏了调 <code>motd.format.align-width</code>（如 210 / 230）；单行微调使用 <code>&lt;space:N&gt;</code>。</p>
+
+    <p><strong>Q：中英文混排会不会算错宽度？</strong><br>
+    A：不会。英文 / 数字按原版字体逐字符宽度累加，中文等全角字符按 8 像素计算，粗体字符额外加宽——都能正确补位。</p>
+
+    <h2>服务器图标</h2>
+    <p><strong>Q：图标一直不显示？</strong><br>
+    A：确认 PNG <strong>恰好 64×64</strong>、文件名与配置一致、放在 <code>plugins/PluxMotd/</code> 下。<code>/pluxmotd status</code> 会显示图标当前状态。</p>
+
+    <p><strong>Q：更换图标需要重载整个配置吗？</strong><br>
+    A：不需要。<code>/pluxmotd icon reload</code> 仅重新读取图标即可。</p>
+
+    <h2>版本与降级</h2>
+    <p><strong>Q：老玩家会不会看到 <code>&lt;color:...&gt;</code> 这样的乱码标签？</strong><br>
+    A：不会。所有标签在发送前已渲染成颜色代码；1.8 - 1.15 客户端收到的是自动降级或你配置的 legacy 文案。</p>
+
+    <p><strong>Q：1.8 - 1.15 客户端能看到渐变吗？</strong><br>
+    A：能看到，但会呈现为逐字符最接近的 16 色阶梯。这是游戏本身的能力限制；如要统一风格可设置 <code>motd.fallback-color</code>。</p>
+
+    <p><strong>Q：MOTD 太长被截断怎么办？</strong><br>
+    A：MOTD 单行受原版协议约束（约 59 个字符 / 220 像素），超出会被客户端截断。请精简文案或拆到第二行。</p>
+
+    <h2>维护模式</h2>
+    <p><strong>Q：维护模式会不会挡住 OP？</strong><br>
+    A：不会。OP 默认拥有 <code>pluxmotd.bypass</code>；也可把普通玩家写进 <code>maintenance.whitelist</code>（支持玩家名和 UUID，UUID 带不带 <code>-</code> 均可识别）。</p>
+
+    <p><strong>Q：重启后维护模式状态丢失吗？</strong><br>
+    A：不丢失，状态实时保存在 <code>data.yml</code>，服务端重启后自动恢复。</p>
+
+    <p><strong>Q：能不能列表显示正常 MOTD、但实际拒绝进入？</strong><br>
+    A：可以。将 <code>maintenance.show-maintenance-motd-to-all</code> 设为 <code>false</code>（“低调维护”）。</p>
+
+    <p><strong>Q：维护模式会不会覆盖封禁、服务器已满等其他拒绝原因？</strong><br>
+    A：不会。其他拒绝原因不受影响、不会被覆盖。</p>
+
+    <h2>假人数</h2>
+    <p><strong>Q：假人数会超过上限导致穿帮吗？</strong><br>
+    A：不会，任何模式下在线人数都会被限制在 0 与显示上限之间。</p>
+
+    <p><strong>Q：随机模式的刷新周期怎么调？</strong><br>
+    A：修改 <code>fake-players.random-refresh-seconds</code>（秒）。设为 <code>0</code> 则每次列表刷新都重新随机。</p>
+
+    <h2>性能与编码</h2>
+    <p><strong>Q：列表刷新会不会很耗性能？</strong><br>
+    A：不会。所有 MOTD 文本在配置加载时预先渲染并缓存；每次服务器列表请求只是从内存取字符串，<strong>不读文件、不查数据库、不发网络请求、不解析格式</strong>。</p>
+
+    <p><strong>Q：控制台中文日志乱码？</strong><br>
+    A：仅可能出现在 Windows 老版本服务端的控制台窗口（GBK 编码）。将控制台切换为 UTF-8（<code>chcp 65001</code>）即可；配置文件与玩家看到的消息不受影响。</p>
+
+    <p><strong>Q：出问题怎么排查？</strong><br>
+    A：开启 <code>config.yml</code> 的 <code>debug: true</code>，插件会输出更详细的日志；配合 <code>/pluxmotd status</code> 查看当前适配器与各模块状态。</p>
+
+    <div class="footer-nav">
+      <a href="#home">Wiki 总览</a><a href="#features">功能介绍</a><a href="#commands">命令与权限</a><a href="#config">配置文件详解</a><a href="#compat">版本兼容</a>
+    </div>
+  </section>
+
+  </main>
+</div>
+
+<div class="backdrop" id="backdrop"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var pages       = document.querySelectorAll('.page');
+  var navLinks    = document.querySelectorAll('.nav-link');
+  var sidebar     = document.getElementById('sidebar');
+  var backdrop    = document.getElementById('backdrop');
+  var menuToggle  = document.getElementById('menuToggle');
+  var themeToggle = document.getElementById('themeToggle');
+  var searchInput = document.getElementById('searchInput');
+  var searchBox   = document.getElementById('searchResults');
+
+  /* ---------- 路由 ---------- */
+  function showPage(route) {
+    if (!route) route = 'home';
+    var target = document.querySelector('.page[data-route="' + route + '"]');
+    if (!target) { route = 'home'; }
+
+    for (var i = 0; i < pages.length; i++) {
+      pages[i].classList.toggle('active', pages[i].getAttribute('data-route') === route);
+    }
+    for (var j = 0; j < navLinks.length; j++) {
+      navLinks[j].classList.toggle('active', navLinks[j].getAttribute('data-route') === route);
+    }
+    var current = document.querySelector('.page[data-route="' + route + '"]');
+    var h1 = current ? current.querySelector('h1') : null;
+    document.title = (h1 ? h1.textContent.trim() + ' · ' : '') + 'PluxMotd Wiki';
+    window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+    closeSidebar();
+  }
+
+  window.addEventListener('hashchange', function () {
+    showPage(location.hash.replace(/^#/, ''));
+  });
+
+  /* ---------- 侧边栏（移动端） ---------- */
+  function openSidebar() {
+    sidebar.classList.add('open');
+    backdrop.classList.add('show');
+  }
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    backdrop.classList.remove('show');
+  }
+  menuToggle.addEventListener('click', function () {
+    sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+  });
+  backdrop.addEventListener('click', closeSidebar);
+  sidebar.addEventListener('click', function (e) {
+    if (e.target.classList.contains('nav-link')) closeSidebar();
+  });
+
+  /* ---------- 主题切换 ---------- */
+  var THEME_KEY = 'pluxmotd-theme';
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+    try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
+  }
+  var savedTheme = null;
+  try { savedTheme = localStorage.getItem(THEME_KEY); } catch (e) {}
+  if (!savedTheme) {
+    savedTheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  applyTheme(savedTheme);
+  themeToggle.addEventListener('click', function () {
+    applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  });
+
+  /* ---------- 搜索 ---------- */
+  var index = [];
+  for (var k = 0; k < pages.length; k++) {
+    var page = pages[k];
+    var titleEl = page.querySelector('h1');
+    index.push({
+      route: page.getAttribute('data-route'),
+      title: titleEl ? titleEl.textContent.trim() : page.getAttribute('data-route'),
+      text: page.textContent.replace(/\s+/g, ' ').toLowerCase()
+    });
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function renderResults(q) {
+    q = q.trim().toLowerCase();
+    if (!q) { searchBox.classList.remove('show'); searchBox.innerHTML = ''; return; }
+
+    var hits = [];
+    for (var i = 0; i < index.length; i++) {
+      var item = index[i];
+      var titleHit = item.title.toLowerCase().indexOf(q) !== -1;
+      var pos = item.text.indexOf(q);
+      if (titleHit || pos !== -1) {
+        var snippet = '';
+        if (pos !== -1) {
+          var start = Math.max(0, pos - 28);
+          snippet = (start > 0 ? '…' : '') + item.text.slice(start, pos + q.length + 42) + '…';
+        }
+        hits.push({ route: item.route, title: item.title, snippet: snippet, titleHit: titleHit });
+      }
+    }
+
+    hits.sort(function (a, b) { return (b.titleHit ? 1 : 0) - (a.titleHit ? 1 : 0); });
+
+    if (!hits.length) {
+      searchBox.innerHTML = '<div class="sr-empty">未找到匹配内容</div>';
+    } else {
+      searchBox.innerHTML = hits.slice(0, 8).map(function (h) {
+        var t = h.titleHit
+          ? h.title.replace(new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig'), '<b>$1</b>')
+          : escapeHtml(h.title);
+        return '<a class="sr-item" href="#' + h.route + '">' + t +
+               (h.snippet ? '<small>' + escapeHtml(h.snippet) + '</small>' : '') + '</a>';
+      }).join('');
+    }
+    searchBox.classList.add('show');
+  }
+
+  searchInput.addEventListener('input', function () { renderResults(this.value); });
+  searchInput.addEventListener('focus', function () { if (this.value.trim()) renderResults(this.value); });
+  searchBox.addEventListener('click', function (e) {
+    if (e.target.closest('.sr-item')) {
+      searchBox.classList.remove('show');
+      searchInput.value = '';
+      searchInput.blur();
+    }
+  });
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.search-wrap')) searchBox.classList.remove('show');
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { searchBox.classList.remove('show'); closeSidebar(); }
+    if (e.key === '/' && document.activeElement !== searchInput) {
+      e.preventDefault();
+      searchInput.focus();
+    }
+  });
+
+  /* ---------- 代码复制按钮 ---------- */
+  var pres = document.querySelectorAll('pre');
+  for (var p = 0; p < pres.length; p++) {
+    (function (pre) {
+      var btn = document.createElement('button');
+      btn.className = 'copy-btn';
+      btn.type = 'button';
+      btn.textContent = '复制';
+      btn.addEventListener('click', function () {
+        var codeEl = pre.querySelector('code');
+        var txt = codeEl ? codeEl.innerText : pre.innerText;
+        var done = function () {
+          btn.textContent = '已复制!';
+          setTimeout(function () { btn.textContent = '复制'; }, 1400);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(txt).then(done, function () { fallbackCopy(txt, done); });
+        } else {
+          fallbackCopy(txt, done);
+        }
+      });
+      pre.appendChild(btn);
+    })(pres[p]);
+  }
+  function fallbackCopy(text, cb) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); cb(); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+
+  /* ---------- 初始化 ---------- */
+  showPage(location.hash.replace(/^#/, '') || 'home');
+
+  /* 页面内跳转平滑滚动 */
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('a[href^="#"]');
+    if (!a) return;
+    var hash = a.getAttribute('href').slice(1);
+    if (!hash) return;
+    if (!document.querySelector('.page[data-route="' + hash + '"]')) return;
+    e.preventDefault();
+    if (location.hash === '#' + hash) showPage(hash);
+    else location.hash = hash;
+  });
+
+})();
+</script>
+</body>
+</html>
