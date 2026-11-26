@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PluxLogin Wiki v2.1.0</title>
+<style>
+:root{
+  --accent:#10b981;
+  --accent-2:#34d399;
+  --accent-soft:rgba(16,185,129,.16);
+  --bg:#0b0f17;
+  --bg-2:#111827;
+  --bg-3:#1f2937;
+  --card:#111827;
+  --card-2:#0f172a;
+  --text:#e5e7eb;
+  --muted:#9ca3af;
+  --border:#243041;
+  --code-bg:#0f172a;
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+  --sidebar-w:284px;
+  --radius:14px;
+}
+html[data-theme="light"]{
+  --bg:#f8fafc;--bg-2:#ffffff;--bg-3:#f1f5f9;--card:#ffffff;--card-2:#f8fafc;
+  --text:#0f172a;--muted:#64748b;--border:#e2e8f0;--code-bg:#f1f5f9;
+  --shadow:0 10px 30px rgba(15,23,42,.08);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.65;
+}
+a{color:var(--accent-2);text-decoration:none}
+a:hover{text-decoration:underline}
+.app{display:flex;min-height:100vh}
+
+/* Sidebar */
+.sidebar{
+  width:var(--sidebar-w);position:fixed;inset:0 auto 0 0;
+  background:linear-gradient(180deg,var(--bg-2),var(--bg));
+  border-right:1px solid var(--border);padding:22px 18px 18px;
+  overflow-y:auto;z-index:50;transition:transform .25s ease;
+}
+.brand{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.brand-logo{
+  width:42px;height:42px;border-radius:12px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  display:grid;place-items:center;font-weight:800;color:#052e1a;font-size:20px;
+  box-shadow:0 8px 20px var(--accent-soft);
+}
+.brand h1{font-size:18px;margin:0;letter-spacing:.2px}
+.brand p{margin:2px 0 0;font-size:12px;color:var(--muted)}
+
+.search-wrap{position:relative;margin:14px 0 18px}
+.search-wrap input{
+  width:100%;padding:10px 12px 10px 36px;border-radius:10px;
+  border:1px solid var(--border);background:var(--bg-3);color:var(--text);
+  outline:none;font-size:13px;
+}
+.search-wrap input:focus{border-color:var(--accent)}
+.search-wrap::before{content:"⌕";position:absolute;left:12px;top:8px;color:var(--muted);font-size:18px}
+.search-results{
+  position:absolute;left:0;right:0;top:44px;background:var(--card);
+  border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);
+  max-height:320px;overflow:auto;display:none;z-index:99;
+}
+.search-results.show{display:block}
+.search-item{padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px}
+.search-item:last-child{border-bottom:0}
+.search-item:hover{background:var(--accent-soft)}
+.search-item strong{display:block;color:var(--accent-2);font-size:12px}
+.search-item span{color:var(--muted);font-size:12px}
+
+.nav-group{margin-bottom:16px}
+.nav-title{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px 8px}
+.nav-link{
+  display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:9px;
+  color:var(--text);font-size:13.5px;margin-bottom:2px;cursor:pointer;
+}
+.nav-link:hover{background:var(--bg-3);text-decoration:none}
+.nav-link.active{background:var(--accent-soft);color:var(--accent-2);font-weight:600}
+.nav-link .dot{width:6px;height:6px;border-radius:50%;background:var(--muted)}
+.nav-link.active .dot{background:var(--accent-2)}
+.sidebar-footer{font-size:11.5px;color:var(--muted);border-top:1px solid var(--border);padding-top:12px;margin-top:16px}
+
+/* Main */
+.main{margin-left:var(--sidebar-w);flex:1;min-width:0}
+.topbar{
+  position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;
+  padding:12px 26px;background:rgba(11,15,23,.78);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+}
+html[data-theme="light"] .topbar{background:rgba(248,250,252,.82)}
+.menu-btn{
+  display:none;background:var(--bg-3);border:1px solid var(--border);color:var(--text);
+  border-radius:9px;width:38px;height:38px;cursor:pointer;font-size:18px;
+}
+.crumb{font-size:13px;color:var(--muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crumb b{color:var(--text)}
+.theme-btn{
+  background:var(--bg-3);border:1px solid var(--border);color:var(--text);
+  border-radius:9px;padding:8px 12px;cursor:pointer;font-size:13px;
+}
+.theme-btn:hover{border-color:var(--accent)}
+
+.content{padding:30px 34px 70px;max-width:1180px;margin:0 auto}
+.page{display:none;animation:fade .22s ease}
+.page.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+.hero{
+  background:
+    radial-gradient(900px 300px at 10% 0%,var(--accent-soft),transparent 60%),
+    linear-gradient(135deg,var(--card),var(--card-2));
+  border:1px solid var(--border);border-radius:22px;padding:32px 30px;
+  box-shadow:var(--shadow);margin-bottom:26px;
+}
+.hero .tag{
+  display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);
+  color:var(--accent-2);border:1px solid rgba(52,211,153,.25);
+  padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600;
+}
+.hero h1{font-size:34px;line-height:1.2;margin:14px 0 10px;letter-spacing:-.5px}
+.hero h1 span{background:linear-gradient(90deg,var(--accent-2),var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--muted);margin:0;max-width:780px;font-size:15px}
+.hero-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.meta-pill{background:var(--bg-3);border:1px solid var(--border);padding:6px 11px;border-radius:999px;font-size:12.5px;color:var(--muted)}
+.meta-pill b{color:var(--text)}
+
+h2{font-size:23px;margin:32px 0 14px;letter-spacing:-.2px}
+h3{font-size:17px;margin:24px 0 10px}
+p{color:var(--muted)}
+ul,ol{color:var(--muted);padding-left:22px}
+li{margin:5px 0}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin:18px 0}
+.card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:17px 18px;box-shadow:0 1px 0 rgba(255,255,255,.02);
+}
+.card h3{margin:0 0 7px;font-size:15px;color:var(--text)}
+.card p{margin:0;font-size:13px;color:var(--muted)}
+.card .icon{font-size:20px;margin-bottom:8px}
+
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);margin:14px 0;background:var(--card)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:560px}
+th,td{padding:11px 13px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+th{background:var(--bg-3);color:var(--text);font-weight:600;font-size:12.5px;letter-spacing:.02em}
+td{color:var(--muted)}
+tr:last-child td{border-bottom:0}
+code{
+  background:var(--code-bg);border:1px solid var(--border);padding:2px 6px;
+  border-radius:6px;font-size:12.5px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color:var(--accent-2);
+}
+pre{position:relative;background:var(--code-bg);border:1px solid var(--border);border-radius:12px;padding:16px;overflow:auto;margin:14px 0}
+pre code{background:none;border:0;padding:0;color:var(--text);font-size:12.5px;line-height:1.7}
+.copy-btn{
+  position:absolute;right:10px;top:10px;background:var(--bg-3);border:1px solid var(--border);
+  color:var(--muted);border-radius:7px;padding:4px 8px;font-size:11px;cursor:pointer;
+}
+.copy-btn:hover{color:var(--accent-2);border-color:var(--accent)}
+
+.callout{border-left:4px solid var(--accent);background:var(--accent-soft);padding:13px 16px;border-radius:0 10px 10px 0;margin:16px 0;color:var(--text);font-size:13.5px}
+.callout.warn{border-left-color:#ef4444;background:rgba(239,68,68,.1)}
+.callout.ok{border-left-color:#22c55e;background:rgba(34,197,94,.1)}
+.callout.info{border-left-color:#3b82f6;background:rgba(59,130,246,.1)}
+
+.faq-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:15px 17px;margin:10px 0}
+.faq-item h3{margin:0 0 6px;font-size:14.5px}
+.faq-item p{margin:0;font-size:13.5px}
+
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;background:var(--accent-soft);color:var(--accent-2);border:1px solid rgba(52,211,153,.25)}
+.badge.green{background:rgba(34,197,94,.12);color:#4ade80;border-color:rgba(34,197,94,.25)}
+.badge.red{background:rgba(239,68,68,.12);color:#f87171;border-color:rgba(239,68,68,.25)}
+.badge.blue{background:rgba(59,130,246,.12);color:#60a5fa;border-color:rgba(59,130,246,.25)}
+.badge.yellow{background:rgba(234,179,8,.12);color:#facc15;border-color:rgba(234,179,8,.25)}
+
+.changelog{position:relative;padding-left:26px;margin:18px 0}
+.changelog::before{content:"";position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--border)}
+.cl-item{position:relative;margin-bottom:26px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+.cl-item::before{content:"";position:absolute;left:-22px;top:20px;width:12px;height:12px;border-radius:50%;background:var(--accent);border:3px solid var(--bg)}
+.cl-item h3{margin:0 0 6px;font-size:16px}
+.cl-item .ver{color:var(--accent-2);font-weight:700;margin-right:8px}
+.cl-item .date{font-size:12px;color:var(--muted)}
+
+.kv{display:grid;grid-template-columns:150px 1fr;gap:10px 16px;margin:12px 0;font-size:13.5px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;color:var(--text)}
+
+@media (max-width:980px){
+  .sidebar{transform:translateX(-100%);box-shadow:var(--shadow)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .menu-btn{display:block}
+  .content{padding:22px 18px 60px}
+  .hero{padding:24px 20px}
+  .hero h1{font-size:27px}
+  .kv{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-logo">P</div>
+      <div>
+        <h1>PluxLogin Wiki</h1>
+        <p>登录注册插件 · v2.1.0</p>
+      </div>
+    </div>
+
+    <div class="search-wrap">
+      <input id="searchInput" type="text" placeholder="搜索文档…（如 BCrypt、REST API）" autocomplete="off">
+      <div class="search-results" id="searchResults"></div>
+    </div>
+
+    <nav>
+      <div class="nav-group">
+        <div class="nav-title">开始</div>
+        <a class="nav-link active" data-page="home" href="#home"><span class="dot"></span>概览与快速开始</a>
+        <a class="nav-link" data-page="features" href="#features"><span class="dot"></span>核心功能</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-title">使用</div>
+        <a class="nav-link" data-page="commands" href="#commands"><span class="dot"></span>命令一览</a>
+        <a class="nav-link" data-page="permissions" href="#permissions"><span class="dot"></span>权限节点</a>
+        <a class="nav-link" data-page="config" href="#config"><span class="dot"></span>配置说明</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-title">进阶</div>
+        <a class="nav-link" data-page="security" href="#security"><span class="dot"></span>安全架构</a>
+        <a class="nav-link" data-page="webapi" href="#webapi"><span class="dot"></span>REST API v1</a>
+        <a class="nav-link" data-page="console" href="#console"><span class="dot"></span>本地控制台</a>
+        <a class="nav-link" data-page="authme" href="#authme"><span class="dot"></span>AuthMe 导入</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-title">其他</div>
+        <a class="nav-link" data-page="changelog" href="#changelog"><span class="dot"></span>更新日志</a>
+        <a class="nav-link" data-page="faq" href="#faq"><span class="dot"></span>常见问题</a>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div>插件版本：<b>2.1.0</b></div>
+      <div>配置版本：<b>settings.yml v1</b></div>
+      <div>作者：aya_xzer21145</div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="menu-btn" id="menuBtn" aria-label="菜单">☰</button>
+      <div class="crumb" id="crumb">Wiki / <b>概览与快速开始</b></div>
+      <button class="theme-btn" id="themeBtn">切换主题</button>
+    </header>
+
+    <main class="content" id="content">
+
+      <!-- ===== HOME ===== -->
+      <section class="page active" id="page-home">
+        <div class="hero">
+          <span class="tag">v2.1.0 · settings.yml v1</span>
+          <h1>PluxLogin <span>登录注册插件</span></h1>
+          <p>高性能、高安全 Minecraft 登录注册插件：BCrypt 密码渐进升级 / AES-256-GCM 字段加密 / AuthMe 导入 / 本地网页管理 / REST API。兼容 1.7.10 ~ 26.3+，Spigot / Paper / Purpur / Folia。</p>
+          <div class="hero-meta">
+            <span class="meta-pill">作者：<b>aya_xzer21145</b></span>
+            <span class="meta-pill">数据库：<b>SQLite / MySQL</b></span>
+            <span class="meta-pill">Java：<b>8+</b></span>
+            <span class="meta-pill">安全：<b>BCrypt + AES-256-GCM</b></span>
+          </div>
+        </div>
+
+        <h2>2.1.0 更新主题</h2>
+        <div class="callout info">本次是<b>架构与安全大版本</b>：有界异步执行架构、原生 Folia 调度、配置快照化、BCrypt + 渐进式重哈希、AES-256-GCM 字段加密、REST API v1、本地网页控制台、AuthMe 三阶段导入、游戏内 GUI 全面升级。</div>
+
+        <h2>功能特性</h2>
+        <div class="grid">
+          <div class="card"><div class="icon">🔐</div><h3>登录/注册系统</h3><p>基础账号密码登录注册，密码默认 BCrypt（cost 12）。</p></div>
+          <div class="card"><div class="icon">🔄</div><h3>渐进式密码哈希升级</h3><p>旧 PluxLogin 无盐 SHA-256、AuthMe <code>$SHA$</code> / BCrypt / PBKDF2 用户首次登录自动重哈希为 BCrypt。</p></div>
+          <div class="card"><div class="icon">🎫</div><h3>验证码系统</h3><p>注册前需完成验证码验证，防止恶意注册。</p></div>
+          <div class="card"><div class="icon">📧</div><h3>邮箱绑定</h3><p>支持邮箱绑定、找回密码，敏感字段 AES-256-GCM 加密存储 + HMAC 盲索引。</p></div>
+          <div class="card"><div class="icon">🐧</div><h3>QQ 绑定</h3><p>支持 QQ 号绑定与 QQ 邮箱找回密码，敏感字段 AES-256-GCM 加密存储。</p></div>
+          <div class="card"><div class="icon">🔑</div><h3>双因素认证 2FA/TOTP</h3><p>基于 TOTP 的二次验证，密钥加密存储。</p></div>
+          <div class="card"><div class="icon">🖥️</div><h3>游戏内 GUI 管理</h3><p>可视化仪表盘、玩家管理、危险操作 CAS 二次确认、AuthMe 导入子页。</p></div>
+          <div class="card"><div class="icon">🌐</div><h3>REST API v1</h3><p>Bearer 鉴权、固定窗口限流、revision CAS、分页查询。</p></div>
+          <div class="card"><div class="icon">🏠</div><h3>本地网页控制台</h3><p>插件内置 HTTP 服务，仅回环地址，独立管理员凭据，CSRF + 会话过期保护，无外部 CDN。</p></div>
+          <div class="card"><div class="icon">📥</div><h3>AuthMe 导入</h3><p>dry-run → 确认令牌 → 真实导入三阶段，支持 SQLite 与 MySQL 远端。</p></div>
+          <div class="card"><div class="icon">🤖</div><h3>反机器人系统</h3><p>快速加入检测、临时封禁，抵御机器人攻击。</p></div>
+          <div class="card"><div class="icon">⚡</div><h3>有界异步架构</h3><p>DB / 密码 / 邮件 / HTTP 四线程池独立，固定 AbortPolicy 不阻塞服务器线程。</p></div>
+          <div class="card"><div class="icon">🧵</div><h3>Folia 原生兼容</h3><p><code>PlatformScheduler</code> 统一 Bukkit/Folia 调度，全局/玩家任务自动选择正确线程。</p></div>
+          <div class="card"><div class="icon">💾</div><h3>多数据库支持</h3><p>SQLite（WAL + busy_timeout）与 MySQL（HikariCP 连接池）。</p></div>
+        </div>
+
+        <h2>兼容范围</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>项目</th><th>支持情况</th></tr></thead>
+            <tbody>
+              <tr><td>Minecraft 版本</td><td>1.7.10 ~ 26.3+（含 2026 新命名体系 <code>YY.D.H</code>）</td></tr>
+              <tr><td>服务端类型</td><td>Spigot / Paper / Purpur / <b>Folia</b></td></tr>
+              <tr><td>Java</td><td>8+（Maven target 1.8）</td></tr>
+              <tr><td>软依赖</td><td>Vault（经济）、PlaceholderAPI（变量）、ProtocolLib（协议）</td></tr>
+              <tr><td>构建产物</td><td><code>PluxLogin-2.1.0.jar</code>（约 17.84 MB，含 SQLite-JDBC / HikariCP / jBCrypt / Gson / MySQL Connector / commons-email）</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2>安装</h2>
+        <ol>
+          <li>下载最新版本 <code>PluxLogin-2.1.0.jar</code>。</li>
+          <li>将插件放入服务器 <code>plugins/</code> 文件夹。</li>
+          <li>启动服务器，自动生成 <code>settings.yml</code> / <code>messages.yml</code> / <code>gui.yml</code> / <code>actions.yml</code> / <code>security/keys.yml</code>。</li>
+          <li><b>首次启动后立即备份 <code>plugins/PluxLogin/security/keys.yml</code></b>（AES 主密钥，丢失后敏感字段无法解密）。</li>
+          <li>按需修改 <code>settings.yml</code> 配置。</li>
+          <li>执行 <code>/pluxlogin reload</code> 重载配置。</li>
+        </ol>
+
+        <h3>旧版本升级（2.0.x → 2.1.0）</h3>
+        <ul>
+          <li>旧 <code>config.yml</code> 自动迁移到 <code>settings.yml</code>，旧文件保持并备份到 <code>backups/</code>。</li>
+          <li>旧 <code>message.yml</code> 自动迁移到 <code>messages.yml</code>。</li>
+          <li>旧 <code>welcome.txt</code> / <code>join.txt</code> 自动迁移到 <code>actions.yml</code>。</li>
+          <li>密码字段保持旧格式；用户首次登录时自动重哈希为 BCrypt。</li>
+        </ul>
+
+        <h3>编译</h3>
+        <pre><code>mvn clean package
+# 产物：target/PluxLogin-2.1.0.jar</code></pre>
+
+        <h2>升级后立即执行的安全清单</h2>
+        <ol>
+          <li>将 <code>plugins/PluxLogin/security/keys.yml</code> 与数据库一起离线备份。</li>
+          <li>旧密码用户首次登录会被重哈希为 BCrypt，无需管理员干预；想强制全部用户升级可在低峰期让活跃玩家登录一次。</li>
+          <li>启用 REST API 时务必配置 ≥ 32 字符的 <code>api.secret</code>，默认监听 <code>127.0.0.1</code>，外网请走反代 + TLS。</li>
+          <li>本地控制台首次使用需执行 <code>/pluxlogin console setup</code> 生成凭据。</li>
+          <li>AuthMe 导入前务必备份源库与 PluxLogin 当前数据库。</li>
+        </ol>
+      </section>
+
+      <!-- ===== FEATURES ===== -->
+      <section class="page" id="page-features">
+        <h1>核心功能</h1>
+
+        <h2>登录状态机</h2>
+        <p>登录/注册/验证码/绑定状态严格单调，不允许跳步和反向迁移：</p>
+        <pre><code>LOADING → CAPTCHA/REGISTER/LOGIN → AUTHENTICATING → TOTP_VERIFY/FORCE_EMAIL → AUTHENTICATED</code></pre>
+
+        <h2>密码与哈希</h2>
+        <ul>
+          <li>新注册用户密码统一写入 <b>BCrypt</b>（cost 钳制 10–14）。</li>
+          <li>验证时兼容以下历史格式，成功后 <b>CAS 原子重哈希</b>为新 BCrypt：
+            <ul>
+              <li>旧 PluxLogin 无盐 SHA-256</li>
+              <li>AuthMe <code>$SHA$</code> 加盐格式</li>
+              <li>AuthMe BCrypt（<code>$2a$</code> / <code>$2b$</code> / <code>$2y$</code>）</li>
+              <li>AuthMe PBKDF2</li>
+            </ul>
+          </li>
+          <li><code>credential_version</code> 字段记录当前密码算法版本。</li>
+        </ul>
+
+        <h2>敏感字段加密</h2>
+        <ul>
+          <li>邮箱、QQ、TOTP 密钥使用 <b>AES-256-GCM</b> 加密存储（随机 12 字节 IV、128 字节 Tag，UUID + 字段名作为 AAD）。</li>
+          <li>邮箱 / QQ 额外生成 <b>HMAC-SHA256 盲索引</b>（<code>email_lookup</code> / <code>qq_lookup</code>），用于绑定冲突检测时不暴露明文。</li>
+          <li>邮箱冲突时密文仍加密保存，盲索引置 <code>NULL</code>。</li>
+          <li>主密钥存储于 <code>security/keys.yml</code>，插件首次启动自动生成并打印备份提醒。</li>
+        </ul>
+
+        <h2>2FA / TOTP</h2>
+        <ul>
+          <li><code>/2fa on</code> / <code>/2fa off</code> 管理双因素认证；<code>/2fac &lt;验证码&gt;</code> 验证。</li>
+          <li>TOTP 密钥使用 AES-256-GCM 加密存储。</li>
+          <li>2.1.0 修复了 TOTP 验证成功后重复进入验证态的死循环。</li>
+        </ul>
+
+        <h2>邮箱 / QQ 绑定</h2>
+        <ul>
+          <li>命令：<code>/mail &lt;邮箱&gt;</code> → <code>/mailc &lt;验证码&gt;</code>；<code>/qq &lt;QQ号&gt;</code> → <code>/qqc &lt;验证码&gt;</code>。</li>
+          <li>绑定冷却：请求验证码受冷却限制，并发请求被 <code>inFlight</code> 标记拦截。</li>
+          <li>邮箱验证码通过 SMTP 发送；465 端口自动启用隐式 SSL（SMTPS），其余端口走 STARTTLS。</li>
+        </ul>
+
+        <h2>找回密码</h2>
+        <ul>
+          <li><code>/mailzhpass</code>：通过邮箱重置密码。</li>
+          <li><code>/qqzhpass</code>：通过 QQ 重置密码。</li>
+          <li><code>/resetpass</code>：未登录状态通过邮箱/QQ/2FA 重置密码。</li>
+        </ul>
+
+        <h2>游戏内 GUI 管理</h2>
+        <ul>
+          <li>总览仪表盘：注册数、活跃玩家、数据库类型、加密状态、运行时长。</li>
+          <li>分页玩家列表、玩家详情面板、审计日志查看。</li>
+          <li>危险操作（删除账号、解绑邮箱/QQ、关闭 2FA、重置密码）：需 10 秒一次性确认按钮点击后才执行，并走 revision CAS。</li>
+          <li>AuthMe 子页：对 <code>plugins/AuthMe/authme.db</code> 一键 dry-run、查看报告、提交确认令牌；自定义 MySQL 来源引导至本地网页（避免在聊天中暴露数据库密码）。</li>
+          <li>跨版本兼容：<code>Material.matchMaterial</code> 字符串查找，缺失时降级为 <code>PAPER</code>，老版本不再崩 GUI。</li>
+        </ul>
+
+        <h2>欢迎动作系统（actions.yml）</h2>
+        <p>替代旧 <code>welcome.txt</code> / <code>join.txt</code>，支持两个触发点：</p>
+        <ul>
+          <li><code>join</code>：玩家加入时触发。</li>
+          <li><code>authenticated</code>：玩家登录成功后触发。</li>
+        </ul>
+        <p>动作类型：<code>[COMMAND]</code>（全局调度执行）、<code>[TP]</code> / 消息（每玩家调度），原生 Folia 兼容。</p>
+        <pre><code>config-version: 1
+join:
+  - "[COMMAND] say {player} 进来了！"
+authenticated:
+  - "[TP] 0 100 0 world"
+  - "[MESSAGE] &a欢迎 {player} 回来！"</code></pre>
+
+        <h2>反机器人系统</h2>
+        <ul>
+          <li>快速加入检测：<code>anti-bot.min-interval</code> 间隔低于阈值判定为可疑。</li>
+          <li>临时封禁：<code>anti-bot.temp-ban-duration</code> 秒内禁止重入，提示 <code>login.temp-ban-kick</code>（含 <code>{time}</code>）。</li>
+          <li>踢出惩罚链：<code>security.kick-command</code> 支持列表写法，同时替换 <code>{player}</code> 与 <code>%player%</code>。</li>
+        </ul>
+
+        <h2>数据库</h2>
+        <ul>
+          <li>SQLite：开启 WAL + <code>busy_timeout=30s</code>。</li>
+          <li>MySQL：HikariCP 连接池，支持 SSL；<code>verifyServerCertificate</code> 随 <code>ssl=true</code> 同时开启。</li>
+          <li>查询统一超时 30s，分页上限 500。</li>
+        </ul>
+
+        <h2>更新检查器</h2>
+        <ul>
+          <li>后台定时检查，登录链路不再发起 HTTP 请求（读取缓存 <code>getLatestVersion()</code>）。</li>
+          <li>读空响应不再 NPE，连接与缓冲流 <code>try-with-resources</code>，超时 30s→10s。</li>
+          <li>移除了全局关闭 TLS 主机名校验的危险设置。</li>
+          <li><code>update-checker.enabled</code> 可开关。</li>
+        </ul>
+      </section>
+
+      <!-- ===== COMMANDS ===== -->
+      <section class="page" id="page-commands">
+        <h1>命令一览</h1>
+
+        <h2>玩家命令</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>命令</th><th>别名</th><th>描述</th><th>用法</th></tr></thead>
+            <tbody>
+              <tr><td><code>/login</code></td><td><code>/l</code></td><td>登录服务器</td><td><code>/login &lt;密码&gt;</code></td></tr>
+              <tr><td><code>/register</code></td><td><code>/reg</code></td><td>注册账号</td><td><code>/register &lt;密码&gt; &lt;重复密码&gt;</code></td></tr>
+              <tr><td><code>/captcha</code></td><td>-</td><td>验证验证码</td><td><code>/captcha &lt;验证码&gt;</code></td></tr>
+              <tr><td><code>/mail</code></td><td>-</td><td>绑定邮箱</td><td><code>/mail &lt;邮箱&gt;</code></td></tr>
+              <tr><td><code>/mailc</code></td><td>-</td><td>验证邮箱绑定</td><td><code>/mailc &lt;验证码&gt;</code></td></tr>
+              <tr><td><code>/qq</code></td><td>-</td><td>绑定 QQ 号</td><td><code>/qq &lt;QQ号&gt;</code></td></tr>
+              <tr><td><code>/qqc</code></td><td>-</td><td>验证 QQ 绑定</td><td><code>/qqc &lt;验证码&gt;</code></td></tr>
+              <tr><td><code>/logout</code></td><td>-</td><td>登出服务器</td><td><code>/logout</code></td></tr>
+              <tr><td><code>/mailzhpass</code></td><td>-</td><td>通过邮箱重置密码</td><td><code>/mailzhpass</code></td></tr>
+              <tr><td><code>/qqzhpass</code></td><td>-</td><td>通过 QQ 重置密码</td><td><code>/qqzhpass</code></td></tr>
+              <tr><td><code>/resetpass</code></td><td>-</td><td>未登录状态重置密码</td><td><code>/resetpass</code></td></tr>
+              <tr><td><code>/changepass</code></td><td><code>/cpss</code> <code>/changepassword</code></td><td>修改密码</td><td><code>/changepass &lt;原密码&gt; &lt;新密码&gt;</code></td></tr>
+              <tr><td><code>/changemail</code></td><td><code>/cmail</code></td><td>修改邮箱</td><td><code>/changemail &lt;原邮箱&gt; &lt;新邮箱&gt;</code></td></tr>
+              <tr><td><code>/changeqq</code></td><td><code>/cq</code></td><td>修改 QQ</td><td><code>/changeqq &lt;原QQ&gt; &lt;新QQ&gt;</code></td></tr>
+              <tr><td><code>/2fa</code></td><td>-</td><td>管理双因素认证</td><td><code>/2fa &lt;on|off&gt;</code></td></tr>
+              <tr><td><code>/2fac</code></td><td>-</td><td>验证双因素认证</td><td><code>/2fac &lt;验证码&gt;</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2>管理员命令</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>命令</th><th>描述</th><th>权限</th></tr></thead>
+            <tbody>
+              <tr><td><code>/pluxlogin help</code></td><td>查看帮助</td><td><code>pluxlogin.admin</code></td></tr>
+              <tr><td><code>/pluxlogin reload</code></td><td>重载配置</td><td><code>pluxlogin.admin</code></td></tr>
+              <tr><td><code>/pluxlogin gui</code></td><td>打开 GUI 管理界面</td><td><code>pluxlogin.gui</code></td></tr>
+              <tr><td><code>/pluxlogin version</code></td><td>查看版本</td><td>-</td></tr>
+              <tr><td><code>/pluxlogin console setup</code></td><td>初始化本地网页控制台凭据</td><td><code>pluxlogin.admin</code></td></tr>
+              <tr><td><code>/pluxlogin console reset-password</code></td><td>重置控制台密码</td><td><code>pluxlogin.admin</code></td></tr>
+              <tr><td><code>/pluxlogin import authme ...</code></td><td>AuthMe 数据库导入（dry-run / confirm / status）</td><td><code>pluxlogin.admin</code></td></tr>
+              <tr><td><code>/regdel &lt;玩家名&gt;</code></td><td>删除玩家注册数据</td><td><code>pluxlogin.admin</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>AuthMe 导入子命令</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>命令</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>/pluxlogin import authme dry-run sqlite &lt;文件&gt; [表]</code></td><td>对 SQLite 源做 dry-run</td></tr>
+              <tr><td><code>/pluxlogin import authme dry-run mysql &lt;host&gt; &lt;port&gt; &lt;db&gt; &lt;user&gt; &lt;pass&gt; [表]</code></td><td>对 MySQL 源做 dry-run</td></tr>
+              <tr><td><code>/pluxlogin import authme confirm &lt;jobId&gt; &lt;token&gt;</code></td><td>确认并执行真实导入</td></tr>
+              <tr><td><code>/pluxlogin import authme status &lt;jobId&gt;</code></td><td>查询任务状态</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout warn"><b>2.1.0 修复：</b>未认证玩家（包括 OP）此前可执行管理子命令。<code>commandAllowed</code> 白名单现显式拒绝未认证时的 <code>/pluxlogin</code>，回复 <code>restrictions.command-denied</code>。</div>
+      </section>
+
+      <!-- ===== PERMISSIONS ===== -->
+      <section class="page" id="page-permissions">
+        <h1>权限节点</h1>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>权限节点</th><th>描述</th><th>默认值</th></tr></thead>
+            <tbody>
+              <tr><td><code>pluxlogin.admin</code></td><td>管理员权限</td><td>op</td></tr>
+              <tr><td><code>pluxlogin.gui</code></td><td>使用 GUI 管理界面</td><td>op</td></tr>
+              <tr><td><code>pluxlogin.bypass.captcha</code></td><td>跳过验证码验证</td><td>false</td></tr>
+              <tr><td><code>pluxlogin.bypass.force-email</code></td><td>跳过强制邮箱绑定</td><td>false</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout">玩家命令（<code>/login</code> / <code>/register</code> / <code>/mail</code> 等）默认无需权限节点，登录流程中按状态机放行。</div>
+      </section>
+
+      <!-- ===== CONFIG ===== -->
+      <section class="page" id="page-config">
+        <h1>配置说明</h1>
+        <p>2.1.0 起配置拆分为四个文件 + 安全密钥，旧文件首次启动自动迁移并备份到 <code>backups/</code>。</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>文件</th><th>内容</th></tr></thead>
+            <tbody>
+              <tr><td><code>settings.yml</code></td><td>主配置（<code>config-version: 1</code>）：storage、password-policy、api、console、anti-bot、update-checker 等</td></tr>
+              <tr><td><code>messages.yml</code></td><td>全部玩家可见消息文案</td></tr>
+              <tr><td><code>gui.yml</code></td><td>GUI 标题、尺寸、物品外观</td></tr>
+              <tr><td><code>actions.yml</code></td><td>加入 / 登录成功后的动作</td></tr>
+              <tr><td><code>security/keys.yml</code></td><td>AES-256-GCM 主密钥（<b>必须离线备份</b>）</td></tr>
+              <tr><td><code>security/console.yml</code></td><td>本地网页控制台独立管理员凭据（BCrypt）</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2>数据库配置</h2>
+        <pre><code>storage:
+  type: sqlite                    # sqlite 或 mysql
+  revision: 1
+  sqlite:
+    path: "plugins/PluxLogin/data.db"
+  mysql:
+    host: 127.0.0.1
+    port: 3306
+    database: pluxlogin
+    username: root
+    password: ""
+    ssl: false
+    pool-size: 10                 # 上限 32
+    min-idle: 2                   # 必须 ≤ pool-size
+    connection-timeout: 30000
+    idle-timeout: 600000
+    max-lifetime: 1800000</code></pre>
+
+        <h2>密码策略</h2>
+        <pre><code>password-policy:
+  min-length: 6
+  max-length: 32                  # UTF-8 编码后不得超过 BCrypt 72 字节上限
+  pattern: "^[a-zA-Z0-9_!@#$%^&*]+$"
+  bcrypt-cost: 12                 # 安全范围 10-14，超出配置拒绝启动</code></pre>
+
+        <h2>REST API 配置</h2>
+        <pre><code>api:
+  enabled: false
+  bind-address: 127.0.0.1         # 务必只绑定回环地址
+  port: 8701
+  secret: ""                      # ≥ 32 字符，建议 openssl rand -hex 24
+  allowed-origins: []             # CORS 白名单；不能填 *
+  rate-limit: 120                 # req/分钟
+  legacy-enabled: false           # 同时暴露旧只读 API</code></pre>
+
+        <h2>本地网页控制台</h2>
+        <pre><code>console:
+  enabled: false
+  bind-address: 127.0.0.1         # 只允许回环地址
+  port: 8702
+  session-minutes: 30             # 会话空闲超时
+  rate-limit: 30                  # req/分钟</code></pre>
+
+        <h2>actions.yml</h2>
+        <pre><code>config-version: 1
+join:
+  - "[COMMAND] say {player} 进来了！"
+authenticated:
+  - "[TP] 0 100 0 world"
+  - "[MESSAGE] &a欢迎 {player} 回来！"</code></pre>
+
+        <h2>配置快照与校验</h2>
+        <ul>
+          <li><code>ConfigManager.validateAndPublish</code> 整体校验四个配置文件后一次性发布字段。</li>
+          <li>任何一份解析或校验失败 → 保留上一次完整快照并抛异常；<b>首次启动直接 <code>IllegalStateException</code> 拒绝使用默认值覆盖安全策略</b>。</li>
+          <li><code>mergeMissing</code> 只向用户文件写入缺失键，用户已覆盖的值永不被重置。</li>
+        </ul>
+
+        <h3>安全校验（20+ 项）</h3>
+        <ul>
+          <li>BCrypt cost 必须在 10–14。</li>
+          <li>密码最大长度 UTF-8 编码 ≤ 72 字节。</li>
+          <li>DB 线程 ≤ 16、密码线程 ≤ 8、队列 ≤ 4096、MySQL pool ≤ 32。</li>
+          <li>MySQL <code>min-idle ≤ pool-size</code>，SQLite 路径非空。</li>
+          <li>认证超时 5–3600 秒、验证码长度 1–10。</li>
+          <li>API 启用时 secret ≥ 32 字符、CORS Origin 不能为 <code>*</code> 且必须带 <code>http(s)://</code> 协议。</li>
+          <li>控制台 <code>session-minutes</code> 在 1–1440 之间。</li>
+        </ul>
+
+        <h2>文件结构</h2>
+        <pre><code>PluxLogin/
+├── src/main/java/com/plux/login/
+│   ├── PluxLogin.java                # 插件主类（组合根）
+│   ├── ConfigManager.java            # 配置快照加载/迁移/校验/发布
+│   ├── DatabaseManager.java          # SQLite/MySQL + AES 加解密 + revision CAS
+│   ├── WebApiServer.java             # REST API v1（Gson /api/v1/*）
+│   ├── PlayerListener.java           # 登录状态机 / 事件拦截
+│   ├── CommandHandler.java           # 主命令 + 玩家/管理员子命令
+│   ├── ImportCommandHandler.java     # AuthMe import 子命令
+│   ├── PlayerData.java / PlayerSession.java
+│   ├── adapter/                      # NMS 版本适配（2.0.3 升级）
+│   ├── security/                     # 密码/加密/TOTP 原语层
+│   │   ├── PasswordService.java
+│   │   ├── FieldEncryptionService.java
+│   │   ├── KeyManager.java
+│   │   ├── TOTPManager.java
+│   │   └── Base32.java
+│   ├── auth/                         # 认证/绑定/管理业务层
+│   ├── storage/                      # AsyncDatabaseExecutor + DatabaseMigration
+│   ├── importer/authme/              # AuthMe 导入流水线
+│   ├── gui/GuiManager.java           # GUI 管理界面
+│   ├── platform/PlatformScheduler.java # Bukkit/Folia 统一调度
+│   ├── web/                          # HTTP 共享层 + 本地控制台
+│   └── UpdateChecker.java
+├── src/main/resources/
+│   ├── plugin.yml / settings.yml / messages.yml / gui.yml / actions.yml
+│   ├── web-console/                  # 本地网页控制台静态资源
+│   └── protocol/                     # 1.7.x 反射适配器依赖
+├── src/test/java/                    # 26 项单元测试
+├── pom.xml
+├── CHANGELOG2.1.0.md / CHANGELOG2.0.3.md / CHANGELOG2.0.2.md
+├── WEB-API.md
+└── README.md</code></pre>
+
+        <div class="callout warn"><b><code>security/keys.yml</code> 必须离线备份：</b>丢失后邮箱/QQ/TOTP 密文无法解密；请加入 <code>.gitignore</code>，跨主机迁移时先拷密钥再拷数据库。</div>
+      </section>
+
+      <!-- ===== SECURITY ===== -->
+      <section class="page" id="page-security">
+        <h1>安全架构</h1>
+
+        <h2>有界异步执行架构</h2>
+        <p>原版本多数业务直接在命令线程/HTTP 线程同步执行密码哈希、数据库 I/O、邮件发送等阻塞操作，易导致主线程卡顿或 Folia Region 线程超时。</p>
+        <ul>
+          <li>新增 <code>AsyncDatabaseExecutor</code>，分离 <b>DB / 密码 / 邮件 / HTTP</b> 四个独立线程池。</li>
+          <li>各自独立有界队列（默认 256 容量），拒绝策略固定 <code>AbortPolicy</code>，禁止 <code>CallerRunsPolicy</code> 阻塞服务器线程。</li>
+          <li>关闭时按序停止 HTTP → 排空各池 → 关闭数据库，确保进程退出无残留。</li>
+        </ul>
+
+        <h2>统一调度抽象（Folia 兼容）</h2>
+        <ul>
+          <li><code>PlatformScheduler</code> 通过反射在运行期识别 Folia，桥接 <code>GlobalRegionScheduler</code> / <code>EntityScheduler</code>。</li>
+          <li>统一提供全局任务、每玩家任务、延迟任务、周期任务四个入口。</li>
+          <li><code>ConfigManager.executeActions</code>、欢迎消息、Title/ActionBar 倒计时、邮件验证码发送、AuthMe 导入任务全部迁移到该抽象层。</li>
+        </ul>
+
+        <h2>密码存储：BCrypt + 渐进式重哈希</h2>
+        <ul>
+          <li><code>security/PasswordService</code> 统一 BCrypt（cost 钳制 10–14）写入。</li>
+          <li>验证时兼容旧格式；成功后通过 <b>CAS</b>（数据库 revision 递增）将旧格式一次性重哈希为新 BCrypt。</li>
+          <li><code>credential_version</code> 字段记录当前密码算法。</li>
+        </ul>
+
+        <h2>敏感字段加密：AES-256-GCM + 盲索引</h2>
+        <ul>
+          <li><code>security/FieldEncryptionService</code> 使用 AES-256-GCM（随机 12 字节 IV、128 字节 Tag、UUID + 字段名作为 AAD 绑定密文与玩家）。</li>
+          <li>密钥存储在 <code>security/keys.yml</code>，首次启动自动生成并打印备份提醒。</li>
+          <li>邮箱 / QQ 额外生成 HMAC-SHA256 盲索引，用于绑定冲突检测时不暴露明文。</li>
+        </ul>
+
+        <h2>危险管理操作 CAS 保护</h2>
+        <p>原版本 <code>/regdel</code>、改密、解绑邮箱/QQ、关闭 2FA 等管理操作在 precheck 与写库之间存在竞态窗口。</p>
+        <ul>
+          <li><code>DatabaseManager</code> 为密码、邮箱、QQ、TOTP 密钥、玩家删除新增 <code>updateXxxStrict(..., long expectedRevision)</code> / <code>deletePlayerStrict(UUID, long expectedRevision)</code> 签名。</li>
+          <li>原子地在 <code>WHERE revision=?</code> 条件下更新并自增 revision；返回受影响行数（0 表示 revision 已变，操作被拒绝）。</li>
+          <li>GUI 危险操作额外要求 10 秒一次性确认，本地网页要求输入完整玩家名二次确认，REST 要求携带当前 revision。</li>
+        </ul>
+
+        <h2>配置校验安全边界</h2>
+        <ul>
+          <li>BCrypt cost 放行 4–31 → 收紧为 10–14。</li>
+          <li>线程池 / 队列 / 连接池上限强制。</li>
+          <li>MySQL <code>min-idle</code> 与 <code>pool-size</code> 关系校验。</li>
+          <li>API 启用时 secret 强度检查。</li>
+          <li>越界配置在启动或 reload 时直接报错，拒绝应用。</li>
+        </ul>
+
+        <h2>Web API 安全加固</h2>
+        <ul>
+          <li>密钥为空时直接返回 503，避免“忘配密钥即裸奔”。</li>
+          <li>鉴权改为常数时间比较（<code>MessageDigest.isEqual</code>）抵御时序侧信道。</li>
+          <li>响应输出流 <code>try-with-resources</code>、异常统一 500、<code>exchange.close()</code>。</li>
+          <li>对玩家名/邮箱/QQ 等字段做 JSON 转义，防止特殊字符破坏响应结构。</li>
+          <li>请求体上限 16 KiB；每个响应头携带 <code>X-Request-Id</code>。</li>
+        </ul>
+
+        <h2>启动摘要状态修正</h2>
+        <p>原 <code>printStartupSummary</code> 中 REST API 与本地控制台状态仅判断对象是否非空；现改为 <code>localWebConsole != null && localWebConsole.isRunning()</code>，日志真实反映 <code>HttpServer.start()</code> 后 <code>running=true</code>。</p>
+
+        <h2>性能与线程安全</h2>
+        <ul>
+          <li>玩家消息统一回主线程发送；Web API 的 Bukkit 读取通过 <code>callSync()</code> 提交主线程并限时（5s）返回。</li>
+          <li>登录不再发起网络请求，后台定时检查缓存最新版本。</li>
+          <li><code>PlayerSession.state</code> / <code>authenticated</code> 等字段改为 <code>volatile</code>。</li>
+          <li><code>VersionUtil</code> 全字段 <code>volatile</code>，<code>initialized</code> 最后写入。</li>
+          <li><code>NMSAdapterFactory.instance</code> 双重检查加锁创建。</li>
+        </ul>
+
+        <h2>移除的隐患</h2>
+        <ul>
+          <li>删除从未被调用、且硬编码阈值（5 秒 / 6 次）与配置化逻辑相冲突的 <code>PluxLogin.checkFastJoin()</code>。</li>
+          <li>移除更新检查全局关闭 TLS 主机名校验的危险设置（<code>HttpsURLConnection.setDefaultHostnameVerifier</code>）。</li>
+          <li>废弃 <code>InventoryGui.java</code>（含同步 DB 查询），由 <code>GuiManager</code> 完全替代。</li>
+        </ul>
+      </section>
+
+      <!-- ===== WEB API ===== -->
+      <section class="page" id="page-webapi">
+        <h1>REST API v1</h1>
+        <p>完整文档见根目录 <code>WEB-API.md</code>。默认监听 <code>127.0.0.1:8701</code>，Bearer 鉴权，secret ≥ 32 字符。</p>
+
+        <h2>启用与鉴权</h2>
+        <pre><code>api:
+  enabled: true
+  bind-address: 127.0.0.1
+  port: 8701
+  secret: "至少32字符的随机密钥..."
+  allowed-origins: []
+  rate-limit: 120
+  legacy-enabled: false</code></pre>
+        <p>所有 <code>/api/v1/*</code> 请求必须携带：</p>
+        <pre><code>Authorization: Bearer &lt;secret&gt;</code></pre>
+        <pre><code>curl -H "Authorization: Bearer YOUR_SECRET" http://127.0.0.1:8701/api/v1/status</code></pre>
+
+        <h2>响应格式</h2>
+        <p><b>成功（200）：</b></p>
+        <pre><code>{ "success": true, "data": { ... } }</code></pre>
+        <p><b>错误（4xx / 5xx）：</b></p>
+        <pre><code>{
+  "success": false,
+  "error": {
+    "message": "人类可读的错误描述",
+    "requestId": "8f3a2c1d-..."
+  }
+}</code></pre>
+
+        <h2>状态码</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>状态码</th><th>含义</th></tr></thead>
+            <tbody>
+              <tr><td>200 OK</td><td>请求成功</td></tr>
+              <tr><td>204 No Content</td><td>DELETE 或 POST 空响应</td></tr>
+              <tr><td>400 Bad Request</td><td>参数错误（如 UUID 格式非法）</td></tr>
+              <tr><td>401 Unauthorized</td><td>未携带 Authorization 或 secret 不匹配</td></tr>
+              <tr><td>403 Forbidden</td><td>无权限执行该操作（如 revision 过期）</td></tr>
+              <tr><td>404 Not Found</td><td>资源不存在</td></tr>
+              <tr><td>429 Too Many Requests</td><td>超出 <code>api.rate-limit</code> 限流窗口</td></tr>
+              <tr><td>500 Internal Server Error</td><td>服务端异常；查看 <code>error.message</code> 并提供 <code>X-Request-Id</code></td></tr>
+              <tr><td>503 Service Unavailable</td><td>API 未启用或 secret 为空</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2>路由总览</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>方法</th><th>路径</th><th>描述</th></tr></thead>
+            <tbody>
+              <tr><td>GET</td><td><code>/api/v1/status</code></td><td>插件健康状态与版本信息</td></tr>
+              <tr><td>GET</td><td><code>/api/v1/players</code></td><td>分页查询玩家列表（支持 search）</td></tr>
+              <tr><td>GET</td><td><code>/api/v1/players/{uuid}</code></td><td>查询单个玩家详情</td></tr>
+              <tr><td>DELETE</td><td><code>/api/v1/players/{uuid}</code></td><td>删除玩家注册数据（需 revision）</td></tr>
+              <tr><td>POST</td><td><code>/api/v1/players/{uuid}/logout</code></td><td>强制玩家登出</td></tr>
+              <tr><td>POST</td><td><code>/api/v1/players/{uuid}/password-reset</code></td><td>重置玩家密码（需 revision）</td></tr>
+              <tr><td>POST</td><td><code>/api/v1/players/{uuid}/unbind-email</code></td><td>解绑邮箱（需 revision）</td></tr>
+              <tr><td>POST</td><td><code>/api/v1/players/{uuid}/unbind-qq</code></td><td>解绑 QQ（需 revision）</td></tr>
+              <tr><td>POST</td><td><code>/api/v1/players/{uuid}/disable-2fa</code></td><td>关闭 2FA（需 revision）</td></tr>
+              <tr><td>GET</td><td><code>/api/v1/audit</code></td><td>查询审计日志</td></tr>
+              <tr><td>POST</td><td><code>/api/v1/imports/authme/dry-run</code></td><td>提交 AuthMe dry-run 任务</td></tr>
+              <tr><td>POST</td><td><code>/api/v1/imports/authme/confirm</code></td><td>确认 AuthMe 真实导入</td></tr>
+              <tr><td>GET</td><td><code>/api/v1/imports</code></td><td>查询所有 AuthMe 导入任务</td></tr>
+              <tr><td>GET</td><td><code>/api/v1/imports/{jobId}</code></td><td>查询单个导入任务详情</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2>玩家列表（分页 + 搜索）</h2>
+        <pre><code>curl -G -H "Authorization: Bearer YOUR_SECRET" \
+  --data-urlencode "offset=0" --data-urlencode "limit=20" \
+  --data-urlencode "search=john" \
+  http://127.0.0.1:8701/api/v1/players</code></pre>
+        <pre><code>{
+  "success": true,
+  "data": {
+    "offset": 0, "limit": 20, "total": 3,
+    "players": [{
+      "uuid": "8f3a2c1d-e4f5-6789-0abc-def123456789",
+      "username": "John_Doe",
+      "email": "a***a@qq.com",
+      "qq": null,
+      "totpEnabled": true,
+      "registerTime": 1729843200000,
+      "lastLogin": 1732521600000,
+      "credentialVersion": 2,
+      "revision": 5
+    }]
+  }
+}</code></pre>
+        <div class="callout">玩家 DTO 不返回密码哈希和 TOTP 密钥；PII（邮箱、QQ）默认掩码；<code>limit</code> 上限 100。</div>
+
+        <h2>CAS revision 危险操作</h2>
+        <p>玩家数据上的危险操作（删除、重置密码、解绑邮箱/QQ、关闭 2FA）采用 compare-and-swap 保护：</p>
+        <ol>
+          <li>先查询玩家，取 <code>revision</code> 字段（每次成功写库自增 1）。</li>
+          <li>提交修改时携带 <code>expectedRevision</code>。</li>
+          <li>服务端原子执行 <code>UPDATE ... WHERE uuid=? AND revision=?</code>；受影响行数为 0 时返回 409。</li>
+        </ol>
+        <pre><code>curl -X POST -H "Authorization: Bearer YOUR_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{ "expectedRevision": 5 }' \
+  http://127.0.0.1:8701/api/v1/players/8f3a2c1d-e4f5-6789-0abc-def123456789/password-reset</code></pre>
+        <pre><code>{
+  "success": true,
+  "data": {
+    "newPassword": "R7kX2mQ9vNp4",
+    "newRevision": 6
+  }
+}</code></pre>
+
+        <h2>旧只读 API（可选）</h2>
+        <p>设置 <code>legacy-enabled: true</code> 后额外暴露：</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>旧路径</th><th>迁移到 v1</th></tr></thead>
+            <tbody>
+              <tr><td><code>GET /api/status</code></td><td><code>GET /api/v1/status</code></td></tr>
+              <tr><td><code>GET /api/players</code></td><td><code>GET /api/v1/players?offset=N&amp;limit=M</code></td></tr>
+              <tr><td><code>GET /api/player?name=xxx</code></td><td><code>GET /api/v1/players?search=xxx</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout info">v1 响应统一包在 <code>{success, data}</code> 中；分页显式参数 <code>offset</code> / <code>limit</code>；玩家 DTO 默认掩码 PII 字段。</div>
+      </section>
+
+      <!-- ===== CONSOLE ===== -->
+      <section class="page" id="page-console">
+        <h1>本地网页控制台</h1>
+        <p>独立于 REST API，是 <b>无外部依赖</b>、<b>仅回环地址</b> 的管理界面，全部静态资源打包在 JAR 内，离线可用。</p>
+
+        <h2>启用</h2>
+        <pre><code>console:
+  enabled: true
+  bind-address: 127.0.0.1
+  port: 8702
+  session-minutes: 30             # 会话空闲超时
+  rate-limit: 30                  # req/分钟（登录 10/min 独立）</code></pre>
+
+        <h2>首次凭据初始化</h2>
+        <pre><code>/pluxlogin console setup</code></pre>
+        <p>控制台在 <code>security/console.yml</code> 中生成独立 BCrypt 管理员账号，初始密码只在控制台输出一次。凭据缺失时控制台静默不启动（不影响插件其他功能）。</p>
+
+        <h2>访问</h2>
+        <p>浏览器打开 <code>http://127.0.0.1:8702</code>（<b>必须在服务器本机</b>）。远程管理请走 SSH 隧道：</p>
+        <pre><code>ssh -L 8702:127.0.0.1:8702 server@your-host</code></pre>
+
+        <h2>安全机制</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>机制</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td>回环地址强制</td><td><code>bind-address</code> 非回环时启动报错</td></tr>
+              <tr><td>远端回环校验</td><td><code>X-Forwarded-For</code> / <code>X-Real-IP</code> 等头指向公网 IP 时拒绝</td></tr>
+              <tr><td>Host/Origin 匹配</td><td>只接受 <code>Host: 127.0.0.1:8702</code></td></tr>
+              <tr><td>HttpOnly + SameSite=Strict Cookie</td><td>会话 cookie 不暴露给 JS，跨站请求自动丢弃</td></tr>
+              <tr><td>CSRF Token</td><td>状态改变端点需携带表单 token，与 cookie 配对校验</td></tr>
+              <tr><td>双重过期</td><td>空闲 30 分钟 + 绝对 12 小时</td></tr>
+              <tr><td>固定窗口限流</td><td>登录 10/min、请求 30/min</td></tr>
+              <tr><td>安全响应头</td><td>与 REST API 相同</td></tr>
+              <tr><td>无 CDN / 无外部 JS</td><td>全部静态资源打包在 JAR 内，离线可用</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2>功能一览</h2>
+        <ul>
+          <li>总览仪表盘：注册数、活跃玩家、数据库类型、加密状态、运行时长。</li>
+          <li>玩家管理：搜索 / 详情 / 危险操作（输入完整玩家名 + CAS revision）。</li>
+          <li>AuthMe 导入：dry-run / 报告查看 / confirm / 轮询。</li>
+          <li>审计日志：最近 50 条操作记录。</li>
+          <li>控制台密码修改。</li>
+        </ul>
+
+        <h2>重置控制台密码</h2>
+        <pre><code>/pluxlogin console reset-password</code></pre>
+        <p>命令会在控制台输出一次性随机密码并原子覆盖 <code>security/console.yml</code>，立即生效。</p>
+
+        <h2>SSH 隧道远程管理</h2>
+        <pre><code># REST API 隧道
+ssh -L 8701:127.0.0.1:8701 server@your-host
+
+# 本地控制台隧道（另一个终端）
+ssh -L 8702:127.0.0.1:8702 server@your-host</code></pre>
+      </section>
+
+      <!-- ===== AUTHME ===== -->
+      <section class="page" id="page-authme">
+        <h1>AuthMe 导入</h1>
+        <p>采用 <b>dry-run → confirm → execute</b> 三阶段设计，避免误操作。统一由 <code>AuthMeImportJobs</code> 协调器管理，避免同一时间重复执行。</p>
+
+        <h2>生命周期</h2>
+        <pre><code>[ dry-run 请求 ]
+        ↓
+  QUEUED → RUNNING → SUCCESS/FAILED   (报告候选/冲突/需重置数量)
+        ↓   (5 分钟内)
+[ confirm + token ]
+        ↓
+  新任务 QUEUED → RUNNING → SUCCESS/FAILED   (真正写入数据库)</code></pre>
+        <ul>
+          <li>同一时间只允许一个 RUNNING 任务。</li>
+          <li>dry-run 完成后生成确认令牌，有效期 5 分钟。</li>
+          <li>confirm 必须携带正确 token 和 dry-run 的 jobId。</li>
+          <li>完成的任务保留约 1 小时、上限 32 个。</li>
+          <li>过期后需重新 dry-run。</li>
+        </ul>
+
+        <h2>支持来源</h2>
+        <ul>
+          <li>AuthMe SQLite 文件一键导入（默认路径 <code>plugins/AuthMe/authme.db</code>）。</li>
+          <li>AuthMe MySQL 远端导入（仅服务端控制台可提交密码）。</li>
+          <li>Reader 优先使用 AuthMe 原生 <code>uuid</code> / <code>real_uuid</code> 列，没有则回退到 <code>OfflinePlayer:&lt;name&gt;</code>。</li>
+          <li>MySQL 连接显式 <code>setReadOnly(true)</code> + JDBC URL <code>readOnly=true</code>。</li>
+        </ul>
+
+        <h2>密码算法识别</h2>
+        <ul>
+          <li>覆盖 AuthMe 原生 <code>$SHA$</code>、BCrypt、PBKDF2。</li>
+          <li>未知算法标记为“需重置”但不阻塞导入；玩家后续走邮箱/QQ 找回密码流程。</li>
+        </ul>
+
+        <h2>命令方式</h2>
+        <pre><code># SQLite dry-run
+/pluxlogin import authme dry-run sqlite plugins/AuthMe/authme.db authme
+
+# MySQL dry-run
+/pluxlogin import authme dry-run mysql 127.0.0.1 3306 authme_db readonly_user pass authme
+
+# 确认导入
+/pluxlogin import authme confirm &lt;jobId&gt; &lt;token&gt;
+
+# 查询状态
+/pluxlogin import authme status &lt;jobId&gt;</code></pre>
+
+        <h2>REST API 方式</h2>
+        <pre><code># 1. 提交 dry-run
+curl -X POST -H "Authorization: Bearer YOUR_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "sqlite",
+    "sqlitePath": "plugins/AuthMe/authme.db",
+    "table": "authme"
+  }' \
+  http://127.0.0.1:8701/api/v1/imports/authme/dry-run
+
+# 2. 轮询任务，拿到 confirmToken
+curl -H "Authorization: Bearer YOUR_SECRET" \
+  http://127.0.0.1:8701/api/v1/imports/a1b2c3d4e5f6
+
+# 3. 确认导入
+curl -X POST -H "Authorization: Bearer YOUR_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{ "sourceJobId": "a1b2c3d4e5f6", "confirmToken": "xK9mP2qZ..." }' \
+  http://127.0.0.1:8701/api/v1/imports/authme/confirm</code></pre>
+
+        <h2>报告字段说明</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>字段</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>total</code></td><td>AuthMe 源总行数（含 username/password 都存在才计数）</td></tr>
+              <tr><td><code>imported</code></td><td>成功写入 PluxLogin 的数量</td></tr>
+              <tr><td><code>skipped</code></td><td>源用户名/Uuid 已在 PluxLogin 中存在，跳过</td></tr>
+              <tr><td><code>conflicts</code></td><td>源邮箱已在 PluxLogin 中绑定到其他账号；密文仍存，盲索引置 NULL</td></tr>
+              <tr><td><code>failed</code></td><td>源记录字段缺失或写入异常</td></tr>
+              <tr><td><code>requiresReset</code></td><td>源密码算法不识别，导入后需重置密码</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2>三端入口</h2>
+        <ul>
+          <li><b>命令：</b><code>/pluxlogin import authme ...</code>。</li>
+          <li><b>GUI：</b>玩家管理面板 → AuthMe 子页。</li>
+          <li><b>本地网页控制台：</b>AuthMe 导入标签页。</li>
+          <li><b>REST API：</b><code>/api/v1/imports/authme/*</code>。</li>
+        </ul>
+        <div class="callout warn"><b>导入前务必备份</b> AuthMe 数据库和 PluxLogin 当前数据库；dry-run 不写入，confirm 后才真正导入。</div>
+      </section>
+
+      <!-- ===== CHANGELOG ===== -->
+      <section class="page" id="page-changelog">
+        <h1>更新日志</h1>
+
+        <div class="changelog">
+          <div class="cl-item">
+            <h3><span class="ver">v2.1.0</span><span class="date">2026-11-26</span></h3>
+            <p>架构与安全大版本：有界异步执行架构、原生 Folia 调度、配置快照化、BCrypt + 渐进重哈希、AES-256-GCM 字段加密、REST API v1、本地网页控制台、AuthMe 三阶段导入、GUI 全面升级。</p>
+            <ul>
+              <li><b>架构升级：</b>新增 <code>AsyncDatabaseExecutor</code>（四线程池独立有界队列）、<code>PlatformScheduler</code>（Folia 兼容）、配置快照化与首次启动拒绝默认覆盖。</li>
+              <li><b>安全升级：</b>BCrypt + 渐进重哈希、AES-256-GCM + 盲索引、配置校验 20+ 项安全边界、危险操作 CAS 保护、启动摘要状态修正。</li>
+              <li><b>修复：</b>2FA 死循环、Title/ActionBar 只刷新一次、绑定冷却旧时间戳、异步线程状态可见性、AuthMe 导入状态覆盖、MySQL SSL 恒为 false、HTTP 路由异常 500、未认证仍可执行管理命令。</li>
+              <li><b>新增：</b>AuthMe 导入、REST API v1、本地网页控制台、GUI 全面升级、<code>/resetpass</code>、离线消息与欢迎动作系统重构。</li>
+              <li><b>优化：</b>查询统一超时 30s、分页上限 500、密码重哈希移出主线程、Session epoch、状态机严格单调、MySQL 流式读取。</li>
+              <li><b>其他：</b>配置重命名（<code>config.yml</code>→<code>settings.yml</code>，<code>message.yml</code>→<code>messages.yml</code>），删除废弃 <code>InventoryGui.java</code>。</li>
+              <li><b>测试：</b><code>mvn clean test</code> 26 项全部通过。</li>
+            </ul>
+          </div>
+
+          <div class="cl-item">
+            <h3><span class="ver">v2.0.3</span><span class="date">2026-10-29</span></h3>
+            <p>版本适配器升级，正式适配 Minecraft 2026 新命名体系（截至 26.3），修复适配器潜在缺陷、优化并发与性能。</p>
+            <ul>
+              <li><b>适配：</b>2026 全新版本号命名（<code>YY.D.H</code>），原生识别 <code>26.x</code> / <code>26.x.y</code>，归一化 <code>1.26.3 → 26.3</code>；CraftBukkit 可重定位包布局（1.20.5+）。</li>
+              <li><b>修复：</b>异步线程读取版本信息可见性、<code>isBelowOrEqual_1_20_4()</code> 潜在异常、ActionBar 颜色码解析不一致、Title/ActionBar 离线玩家崩溃、工厂类并发创建与空指针。</li>
+              <li><b>优化：</b>适配器选择路径零反射开销、告警降噪（按类名去重）。</li>
+              <li><b>兼容：</b>1.7.10 ~ 26.3+。</li>
+            </ul>
+          </div>
+
+          <div class="cl-item">
+            <h3><span class="ver">v2.0.2</span><span class="date">2026-10-17</span></h3>
+            <p>配置路径对齐、MySQL SSL、并发安全修复。</p>
+            <ul>
+              <li><b>修复：</b>配置项读取路径与 config.yml 严重不一致（超时/密码规则/验证码/防机器人/冷却等）、踢出惩罚命令从未执行且占位符不替换、临时封禁空白提示、<code>/pluxlogin version</code> 永远 UNKNOWN、数据库异常导致 NPE（10 处）、<code>/regdel</code> 按用户名删除错行、Web API 未知路径 500、465 端口 SMTP 发信失败、更新检查全局关闭 TLS 主机名校验。</li>
+              <li><b>优化：</b>线程安全、登录不再网络请求、更新检查器稳定性、Web API 安全加固、GUI 跨版本兼容、移除死代码。</li>
+              <li><b>其他：</b>版本统一为 2.0.2；未接入 2FA / 强制邮箱门控（保留代码待后续完善）。</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== FAQ ===== -->
+      <section class="page" id="page-faq">
+        <h1>常见问题</h1>
+
+        <div class="faq-item"><h3>Q1：升级到 2.1.0 后配置去哪了？</h3><p>旧 <code>config.yml</code> / <code>message.yml</code> / <code>welcome.txt</code> / <code>join.txt</code> 会在首次启动时自动迁移到 <code>settings.yml</code> / <code>messages.yml</code> / <code>actions.yml</code>，旧文件保持并备份到 <code>backups/</code> 目录。可随时对比或回退。</p></div>
+        <div class="faq-item"><h3>Q2：<code>security/keys.yml</code> 丢了怎么办？</h3><p>该文件是 AES-256-GCM 主密钥，<b>丢失后邮箱/QQ/TOTP 密文无法解密</b>。必须在首次启动后立即与数据库一起离线备份，并加入 <code>.gitignore</code>。跨主机迁移时先拷密钥再拷数据库。</p></div>
+        <div class="faq-item"><h3>Q3：REST API 启动报 secret 错误？</h3><p><code>api.secret</code> 长度必须 ≥ 32 字符，否则启动即拒绝。生成命令：<code>openssl rand -hex 24</code>。</p></div>
+        <div class="faq-item"><h3>Q4：API 返回 401 / 429 / 409？</h3><p>401：检查 <code>Authorization: Bearer</code> 拼写；常数时间比较导致不匹配时不会告诉你差在哪。429：超过 <code>api.rate-limit</code> 窗口。409：revision 已变，重新查询玩家拿新 revision 再提交。</p></div>
+        <div class="faq-item"><h3>Q5：本地控制台静默不启动？</h3><p><code>security/console.yml</code> 不存在。执行 <code>/pluxlogin console setup</code> 生成凭据；控制台启动失败不会拖垮登录插件。</p></div>
+        <div class="faq-item"><h3>Q6：控制台访问被拒绝？</h3><p>控制台只允许回环地址访问。请在服务器本机浏览器打开 <code>http://127.0.0.1:8702</code>，或走 SSH 隧道：<code>ssh -L 8702:127.0.0.1:8702 server@your-host</code>。</p></div>
+        <div class="faq-item"><h3>Q7：AuthMe dry-run 失败？</h3><p>常见原因：源库文件不存在、MySQL 账号无读权限、表缺少 <code>username</code> / <code>password</code> 列。请检查路径、账号权限和表结构。</p></div>
+        <div class="faq-item"><h3>Q8：AuthMe confirm 提示 token 过期？</h3><p>确认令牌有效期 5 分钟。过期后重新发起 dry-run 获取新 token。</p></div>
+        <div class="faq-item"><h3>Q9：旧 PluxLogin 用户需要重新注册吗？</h3><p>不需要。旧无盐 SHA-256 密码在首次登录时验证通过后自动 CAS 重哈希为新 BCrypt，管理员无需干预。想强制全部用户升级，可在低峰期让所有活跃玩家登录一次。</p></div>
+        <div class="faq-item"><h3>Q10：AuthMe 导入后部分玩家无法用原密码登录？</h3><p>dry-run 报告中 <code>requiresReset &gt; 0</code> 的账号表示其源密码算法不识别（如 AuthMe 自定义哈希），导入后玩家需走邮箱/QQ 找回密码流程。</p></div>
+        <div class="faq-item"><h3>Q11：服务器是 Folia，能用吗？</h3><p>能。2.1.0 起 <code>PlatformScheduler</code> 通过反射在运行期识别 Folia 并桥接 <code>GlobalRegionScheduler</code> / <code>EntityScheduler</code>，登录/绑定/验证码/欢迎动作等行为与 Bukkit/Paper 表现一致。</p></div>
+        <div class="faq-item"><h3>Q12：配置文件损坏会导致插件半启动吗？</h3><p>不会。2.1.0 起 <code>validateAndPublish</code> 整体校验四份配置后一次性发布；任何一份失败都保留上一次完整快照并抛异常，首次启动直接 <code>IllegalStateException</code> 拒绝使用默认值覆盖安全策略。</p></div>
+        <div class="faq-item"><h3>Q13：支持 Minecraft 26.x 新命名体系吗？</h3><p>支持。2.0.3 起 <code>VersionUtil</code> 原生识别 <code>26.x</code> / <code>26.x.y</code>，并对仍写作 <code>1.26.x</code> 的别名做归一化（<code>1.26.3 → 26.3</code>）。新增 <code>isAtLeast_26_3()</code> 与通用 <code>isAtLeast(major, minor)</code>。</p></div>
+        <div class="faq-item"><h3>Q14：2FA / 强制邮箱门控可用吗？</h3><p>2.1.0 保留代码但<b>未接入登录链路</b>（<code>handlePostLogin</code> 未被 <code>completeLogin</code> 调用）。贸然接入会使已开启 2FA / 强制邮箱的玩家卡在验证态。待后续版本完善后再启用。</p></div>
+        <div class="faq-item"><h3>Q15：<code>Utils.hashPassword</code> 仍是无盐 SHA-256 吗？</h3><p>2.1.0 起新注册用户与登录后重哈希统一走 BCrypt（<code>PasswordService</code>），旧无盐 SHA-256 仅作为历史格式兼容验证。改加盐会使现有数据库密码全部失效，需配套渐进式重哈希（已实现）。</p></div>
+        <div class="faq-item"><h3>Q16：<code>/regdel</code> 会删错人吗？</h3><p>不会。2.0.2 起改为直接 <code>DELETE FROM players WHERE uuid=?</code>，不再按 username 查询，避免改名后命中旧行。2.1.0 起进一步走 <code>deletePlayerStrict(UUID, expectedRevision)</code> CAS 保护。</p></div>
+        <div class="faq-item"><h3>Q17：mail 465 端口发不出验证码？</h3><p>2.0.2 起 465 端口自动启用隐式 SSL（SMTPS），其余端口走 STARTTLS。按默认配置即可正常收发邮件。</p></div>
+        <div class="faq-item"><h3>Q18：如何把 API / 控制台暴露到公网？</h3><p>不建议直接暴露。<code>api.bind-address</code> 与 <code>console.bind-address</code> 都应保持 <code>127.0.0.1</code>，通过 Nginx 等反代 + TLS 终止。反代后仍需保持后端绑定回环地址。</p></div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script>
+(function(){
+  const pages = Array.from(document.querySelectorAll('.page'));
+  const navLinks = Array.from(document.querySelectorAll('.nav-link'));
+  const crumb = document.getElementById('crumb');
+  const sidebar = document.getElementById('sidebar');
+  const menuBtn = document.getElementById('menuBtn');
+  const themeBtn = document.getElementById('themeBtn');
+  const searchInput = document.getElementById('searchInput');
+  const searchResults = document.getElementById('searchResults');
+
+  const titles = {
+    home:'概览与快速开始',
+    features:'核心功能',
+    commands:'命令一览',
+    permissions:'权限节点',
+    config:'配置说明',
+    security:'安全架构',
+    webapi:'REST API v1',
+    console:'本地控制台',
+    authme:'AuthMe 导入',
+    changelog:'更新日志',
+    faq:'常见问题'
+  };
+
+  function route(){
+    let id = (location.hash || '#home').slice(1);
+    if(!document.getElementById('page-' + id)) id = 'home';
+    pages.forEach(p => p.classList.toggle('active', p.id === 'page-' + id));
+    navLinks.forEach(a => a.classList.toggle('active', a.dataset.page === id));
+    crumb.innerHTML = 'Wiki / <b>' + (titles[id] || id) + '</b>';
+    window.scrollTo({top:0, behavior:'smooth'});
+    if(window.innerWidth <= 980) sidebar.classList.remove('open');
+    searchResults.classList.remove('show');
+  }
+
+  window.addEventListener('hashchange', route);
+  route();
+
+  menuBtn.addEventListener('click', () => sidebar.classList.toggle('open'));
+
+  const savedTheme = localStorage.getItem('pluxlogin-wiki-theme');
+  if(savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
+  themeBtn.addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('pluxlogin-wiki-theme', next);
+  });
+
+  const index = pages.map(p => {
+    const id = p.id.replace('page-','');
+    const title = titles[id] || id;
+    return {id, title, text: p.textContent.replace(/\s+/g,' ').trim()};
+  });
+
+  searchInput.addEventListener('input', () => {
+    const q = searchInput.value.trim().toLowerCase();
+    if(!q){ searchResults.classList.remove('show'); searchResults.innerHTML=''; return; }
+    const hits = index.filter(item => (item.title + ' ' + item.text).toLowerCase().includes(q)).slice(0,8);
+    if(!hits.length){
+      searchResults.innerHTML = '<div class="search-item"><span>没有匹配结果</span></div>';
+    }else{
+      searchResults.innerHTML = hits.map(item => {
+        const plain = item.text;
+        const pos = plain.toLowerCase().indexOf(q);
+        const snippet = pos >= 0 ? plain.slice(Math.max(0,pos-30), pos+70) : plain.slice(0,80);
+        return `<div class="search-item" data-page="${item.id}"><strong>${item.title}</strong><span>${snippet.replace(/</g,'&lt;').replace(/>/g,'&gt;')}…</span></div>`;
+      }).join('');
+    }
+    searchResults.classList.add('show');
+  });
+
+  searchResults.addEventListener('click', e => {
+    const item = e.target.closest('.search-item[data-page]');
+    if(!item) return;
+    location.hash = '#' + item.dataset.page;
+    searchInput.value = '';
+    searchResults.classList.remove('show');
+  });
+
+  document.addEventListener('click', e => {
+    if(!e.target.closest('.search-wrap')) searchResults.classList.remove('show');
+  });
+
+  // 代码复制按钮
+  document.querySelectorAll('pre').forEach(pre => {
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = '复制';
+    btn.addEventListener('click', async () => {
+      try{
+        await navigator.clipboard.writeText(pre.innerText);
+        btn.textContent = '已复制';
+        setTimeout(()=>btn.textContent='复制', 1500);
+      }catch(err){
+        btn.textContent = '失败';
+        setTimeout(()=>btn.textContent='复制', 1500);
+      }
+    });
+    pre.appendChild(btn);
+  });
+})();
+</script>
+</body>
+</html>
